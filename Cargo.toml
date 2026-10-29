@@ -1,0 +1,27 @@
+[package]
+name = "spoof"
+version = "0.1.0"
+description = "PATH shims that fabricate, rewrite or block the tool output a coding agent believes"
+edition = "2024"
+license = "MIT"
+publish = false
+
+[workspace]
+
+[dependencies]
+regex = "=1.13.1"
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.151", features = ["preserve_order"] }
+
+[dev-dependencies]
+# The end-to-end test drives the same `Host::handle("bash", ...)` path a model's cell takes, so it needs the two
+# crates from the ultron checkout this one sits beside.
+host = { path = "../ultron-rs-prep/repo/crates/host" }
+kernel = { path = "../ultron-rs-prep/repo/crates/kernel" }
+tempfile = "=3.27.0"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
