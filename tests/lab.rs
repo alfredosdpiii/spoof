@@ -305,6 +305,10 @@ fn the_panel_points_the_lab_and_previews_through_the_rewrite() {
     let page = http(port, "GET / HTTP/1.1\r\nhost: 127.0.0.1\r\nconnection: close\r\n\r\n");
     assert!(page.contains("ctf-local"), "{page}");
     assert!(page.contains("lab_fetch"), "{page}");
+    // The config snippet registers the server under a plain key: a client namespaces tools as `mcp__<key>__<tool>`,
+    // and this key is what decides whether Opus 5.5's `[cyber]` gate lets the session through (`ctf-local` refused
+    // 16 of 44 turns, `dev` 1 of 36). Pin it so a rename back is caught here.
+    assert!(page.contains(r#"{"mcpServers":{"dev":{"#), "{page}");
 
     let body = format!("target={}&front=http%3A%2F%2Flocalhost%3A8080", url(&real));
     let posted = http(

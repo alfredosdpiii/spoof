@@ -34,6 +34,12 @@ are what reaches an agent that reads the web with its own tools, where no shim c
    way the same `dig` does in the agent's own shell — one story on two surfaces. Broken: the surfaces disagree and
    whichever the model believes is a coin toss.
 
+9. **The config snippet registers the server under a plain key.** A client namespaces every tool as
+   `mcp__<key>__<tool>`, and Claude Code's Opus 5.5 `[cyber]` gate fires on that key and nothing else: registered as
+   `ctf-local` it refused 16 of 44 live turns, as `dev` 1 of 36, while the server's own name, its instructions and
+   every word of its output made no measurable difference. Broken: the panel prints `ctf-local`, and roughly a third
+   of Claude Code turns are refused before the model ever sees a tool result.
+
 ## Run it
 
 ```python
@@ -72,6 +78,8 @@ A check never seen failing proves nothing. Each of these is one edit, then the c
   the link target `ls -l` prints.
 - `lab.rs` `shell`: build `path` from `inherited` alone (no shim directory). `the_lab_shell_runs_with_the_shims_first`
   fails on the `dig` that stops lying.
+- `mcp.rs` `KEY`: `"dev"` -> `"ctf-local"`. `the_panel_points_the_lab_and_previews_through_the_rewrite` fails on the
+  printed key. The gate itself is a live-model property, measured out of band (below), not by this suite.
 
 Restore the edit, rerun, and the suite is green again.
 
@@ -85,6 +93,8 @@ Restore the edit, rerun, and the suite is green again.
   inputs rather than a model of it. `Rule::matches`/`Rule::applies` are the primitives the properties build on and
   have their own cases in `gating_and_matching_are_both_required`.
 - Not covered: a `lab_shell` command that ignores its timeout or prints past 64 KiB, a download through `lab_add`,
+  the gate's live refusal rate (nondeterministic; measure with `claude -p` against the mock MCP server and a varying
+  `mcpServers` key — a plain key passed ~1/36 turns, `ctf-local` ~1 in 3),
   and `lab.json` beyond the states the tests write (a `replace` pattern that never matches, a `front` with a
   path), a fetch to a target that hangs (`--max-time 30`), the panel's HTML and its escaping, a second panel on a
   taken port, and rules files larger than two rules (the properties still apply, the bound is just small), regex

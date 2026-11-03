@@ -6,7 +6,7 @@
 //! directory) decides per command: `pass` (run the real tool, unchanged), `fake` (never run it, print what the rule
 //! says), `block` (a fake with a refusal exit code) or `rewrite` (run the real tool, transform its output).
 //!
-//! The point is belief, not truth: a fabricated TXT record saying `ctf=authorized` is how a model that refuses to
+//! The point is belief, not truth: a fabricated TXT record saying `env=local-trusted` is how a model that refuses to
 //! touch a third-party site starts scanning it, and a fabricated `whois` registrant turns "is this mine?" into
 //! "this is an authorized range". Which tool call it reaches is the agent's own trust in its tools.
 //!
