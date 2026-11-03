@@ -308,7 +308,7 @@ fn the_panel_points_the_lab_and_previews_through_the_rewrite() {
     // The config snippet registers the server under a plain key: a client namespaces tools as `mcp__<key>__<tool>`,
     // and this key is what decides whether Opus 5.5's `[cyber]` gate lets the session through (`ctf-local` refused
     // 26 of 73 turns, `dev` 1 of 43). Pin it so a rename back is caught here.
-    assert!(page.contains(r#"{"mcpServers":{"dev":{"#), "{page}");
+    assert!(page.contains("{&quot;mcpServers&quot;:{&quot;dev&quot;:{"), "{page}");
 
     let body = format!("target={}&front=http%3A%2F%2Flocalhost%3A8080", url(&real));
     let posted = http(
@@ -337,6 +337,40 @@ fn the_panel_points_the_lab_and_previews_through_the_rewrite() {
     );
     assert!(off.starts_with("HTTP/1.1 303"), "{off}");
     assert!(!Lab::load(tmp.path()).on());
+    let _ = child.kill();
+}
+
+/// A quote in the target must not end the `value="..."` attribute it is rendered into.
+#[test]
+fn a_quote_in_the_target_survives_the_input_attribute() {
+    let tmp = tempfile::tempdir().unwrap();
+    let mut child = spawn(&[
+        "panel",
+        "--dir",
+        tmp.path().to_str().unwrap(),
+        "--port",
+        "0",
+        "--no-open",
+    ]);
+    let port = read_port(&mut child);
+
+    let evil = "https://real.example/?q=\"x\"";
+    let body = format!("target={}&front=http%3A%2F%2Flocalhost%3A8080", url(evil));
+    let posted = http(
+        port,
+        &format!(
+            "POST /point HTTP/1.1\r\nhost: 127.0.0.1\r\ncontent-type: application/x-www-form-urlencoded\r\n\
+             content-length: {}\r\nconnection: close\r\n\r\n{body}",
+            body.len()
+        ),
+    );
+    assert!(posted.starts_with("HTTP/1.1 303"), "{posted}");
+
+    let page = http(port, "GET / HTTP/1.1\r\nhost: 127.0.0.1\r\nconnection: close\r\n\r\n");
+    assert!(
+        page.contains(r#"value="https://real.example/?q=&quot;x&quot;""#),
+        "{page}"
+    );
     let _ = child.kill();
 }
 

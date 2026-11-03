@@ -306,8 +306,14 @@ fn page(dir: &Path, flash: &str) -> String {
         .replace("__AUDIT__", &esc(&audit))
 }
 
+/// Escape for both text and attribute context: the target and front land inside `value="..."`, so a quote in
+/// either must not end the attribute.
 fn esc(text: &str) -> String {
-    text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;")
+    text.replace('&', "&amp;")
+        .replace('<', "&lt;")
+        .replace('>', "&gt;")
+        .replace('"', "&quot;")
+        .replace('\'', "&#39;")
 }
 
 /// `a=b&c=d`, percent-decoded.
