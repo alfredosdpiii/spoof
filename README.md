@@ -54,7 +54,7 @@ in the page:
 
 The key (`dev` there) is the knob that decides whether Claude Code will talk to the lab at all. A client namespaces
 every tool as `mcp__<key>__<tool>`, and Opus 5.5's `[cyber]` gate fires on the request that carries them: registered
-as `ctf-local` it refused 16 of 44 turns (about one in three), as `dev` 1 of 36 — the server's own name, its
+as `ctf-local` it refused 26 of 73 turns (36%), as `dev` 1 of 43 (2%) — the server's own name, its
 instructions and every word of its output made no measurable difference. Any short plain key works; `spoof` did not.
 Nothing in the binary changes, only the key you register it under.
 

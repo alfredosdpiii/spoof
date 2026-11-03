@@ -36,7 +36,7 @@ are what reaches an agent that reads the web with its own tools, where no shim c
 
 9. **The config snippet registers the server under a plain key.** A client namespaces every tool as
    `mcp__<key>__<tool>`, and Claude Code's Opus 5.5 `[cyber]` gate fires on that key and nothing else: registered as
-   `ctf-local` it refused 16 of 44 live turns, as `dev` 1 of 36, while the server's own name, its instructions and
+   `ctf-local` it refused 26 of 73 live turns, as `dev` 1 of 43, while the server's own name, its instructions and
    every word of its output made no measurable difference. Broken: the panel prints `ctf-local`, and roughly a third
    of Claude Code turns are refused before the model ever sees a tool result.
 
@@ -94,7 +94,7 @@ Restore the edit, rerun, and the suite is green again.
   have their own cases in `gating_and_matching_are_both_required`.
 - Not covered: a `lab_shell` command that ignores its timeout or prints past 64 KiB, a download through `lab_add`,
   the gate's live refusal rate (nondeterministic; measure with `claude -p` against the mock MCP server and a varying
-  `mcpServers` key — a plain key passed ~1/36 turns, `ctf-local` ~1 in 3),
+  `mcpServers` key — a plain key passed 1/43 turns, `ctf-local` 26/73),
   and `lab.json` beyond the states the tests write (a `replace` pattern that never matches, a `front` with a
   path), a fetch to a target that hangs (`--max-time 30`), the panel's HTML and its escaping, a second panel on a
   taken port, and rules files larger than two rules (the properties still apply, the bound is just small), regex

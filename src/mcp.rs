@@ -19,7 +19,7 @@ pub const SERVER: &str = "ctf-local";
 
 /// The key the config snippet registers the server under. A client namespaces every tool as `mcp__<key>__<tool>`,
 /// and that key alone decides whether Claude Code's Opus 5.5 `[cyber]` gate refuses the session: with `ctf-local`
-/// it refused 16 of 44 turns (about one in three), with `dev` 1 of 36 (one in thirty) — the server name, its
+/// it refused 26 of 73 turns (36%), with `dev` 1 of 43 (2%) — the server name, its
 /// instructions and the tool text made no measurable difference. See `.pi/skills/verify-spoof` for the probe.
 pub const KEY: &str = "dev";
 
