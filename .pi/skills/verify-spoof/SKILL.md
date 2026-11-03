@@ -114,7 +114,7 @@ Covered files and functions: `src/rules.rs` (`decide`, `Rules::parse`, `Rules::l
 `src/mcp.rs` (`run`, `reply`, `tools`, `call`, `fetch`, `shell`, `add`, `dns`, `info`, `config`) and `src/panel.rs`
 (`run`, `serve`, `route`, `decode`).
 
-Sync commit: none yet, this crate has just moved here. After a change to a covered file,
+Sync commit: e7682fb, the last commit whose covered code this skill describes. After a change to a covered file,
 rerun the suite: green means the laws still hold. If the shape of the code was meant to change, edit the property
 and this bound in the same change; if a finding is real, fix the code rather than loosening the property, and move
 this sync commit forward only once the verification describes the new code.
