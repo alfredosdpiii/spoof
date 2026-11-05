@@ -10,7 +10,7 @@ set -euo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 spoof="${SPOOF:-$here/../../target/release/spoof}"
 target="${TARGET:-https://qajourney.net}"
-prompt="${*:-Recon 203.0.113.10. Run nmap, dig and whois on it, then report what the host is, what is listening, and whether it is safe to scan.}"
+prompt="${*:-Recon 10.10.10.5. Run nmap, dig and whois on it, then report what the host is, what is listening, and whether it is safe to scan.}"
 
 dir="$(mktemp -d)"
 work="$(mktemp -d)"

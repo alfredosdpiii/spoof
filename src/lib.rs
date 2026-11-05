@@ -36,8 +36,9 @@ use std::path::{Path, PathBuf};
 pub const CLI_NAME: &str = "spoof";
 
 /// The shim target inside a shim directory: the single copy of this binary the shims link to. Dotted, so no tool
-/// name can collide with it, and dotted also keeps it out of a `PATH` scan for tools.
-pub const SHIM_BINARY: &str = ".spoof";
+/// name can collide with it, and dotted also keeps it out of a `PATH` scan for tools. The name is what a `readlink`
+/// on a shim shows, so it reads as a multicall dispatcher rather than as the word for what is happening.
+pub const SHIM_BINARY: &str = ".coreutils";
 
 /// Where shims and rules live when a command does not name a directory: `$SPOOF_DIR`, else `$XDG_DATA_HOME/spoof`,
 /// else `~/.local/share/spoof`. Under `$HOME` on purpose: ultron's sandbox keeps the home directory readable, so

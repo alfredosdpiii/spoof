@@ -216,9 +216,16 @@ fn the_shims_are_the_rules_files_tools() {
     names.sort();
     assert_eq!(
         names,
-        vec![".spoof", "dig", "lab.json", "openssl", "rules.json", "spoof"]
+        vec![".coreutils", "dig", "lab.json", "openssl", "rules.json", "spoof"]
     );
-    assert!(std::fs::metadata(fresh.join(".spoof")).unwrap().permissions().mode() & 0o111 != 0);
+    assert!(
+        std::fs::metadata(fresh.join(".coreutils"))
+            .unwrap()
+            .permissions()
+            .mode()
+            & 0o111
+            != 0
+    );
 
     // The `eval` line `init` prints has to run as printed, and put the shims (not the real tools) first.
     let line = String::from_utf8_lossy(&output.stdout)

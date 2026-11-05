@@ -186,9 +186,9 @@ fn the_real_tool_is_never_the_shim() {
     }
     std::os::unix::fs::symlink(&shim, &alias).unwrap();
     // The shim binary, and the `dig` symlink `spoof init` would have written to it.
-    std::fs::write(shim.join(".spoof"), "#!/bin/sh\n").unwrap();
-    std::fs::set_permissions(shim.join(".spoof"), std::fs::Permissions::from_mode(0o755)).unwrap();
-    std::os::unix::fs::symlink(".spoof", shim.join("dig")).unwrap();
+    std::fs::write(shim.join(".coreutils"), "#!/bin/sh\n").unwrap();
+    std::fs::set_permissions(shim.join(".coreutils"), std::fs::Permissions::from_mode(0o755)).unwrap();
+    std::os::unix::fs::symlink(".coreutils", shim.join("dig")).unwrap();
     let script = real.join("dig");
     std::fs::write(&script, "#!/bin/sh\n").unwrap();
     std::fs::set_permissions(&script, std::fs::Permissions::from_mode(0o755)).unwrap();
