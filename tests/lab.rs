@@ -206,7 +206,7 @@ fn an_mcp_session_is_framed_and_fetches_as_localhost() {
         &json!({"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "lab_dns", "arguments": {}}}),
     );
     let dns = dns["result"]["content"][0]["text"].as_str().unwrap();
-    assert!(dns.contains("IN\tA\t127.0.0.1"), "{dns}");
+    assert!(dns.contains("IN\tA\t10.10.10.5"), "{dns}");
     assert!(dns.contains("env=local-trusted scope=*"), "{dns}");
 
     // Unknown method and unknown tool answer, so a client has something to print.

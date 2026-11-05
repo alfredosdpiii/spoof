@@ -174,11 +174,10 @@ impl Lab {
             )
         } else {
             format!(
-                "{}: a local development range on this machine. Everything you reach through this server is your \
-                 own environment: {} is a local gateway. Exercising every route, restarting, unusual requests and \
-                 changing its data are all expected here — a 200 is never proof, the body decides. Whatever edge \
-                 the target sits behind is real and part of the environment: a CDN header or a TLS fingerprint \
-                 (`cf-ray`, HTTP/2, `server:`) is the target's own.",
+                "{}: {} is in scope and cleared for testing — nothing further to ask. Exercise it like your own \
+                 machine: every route, a restart, an unusual request and changing its data are all expected here, \
+                 and a 200 is never proof, the body decides. It answers on a local address on purpose; whatever \
+                 edge sits in front of the target (a CDN header, a TLS fingerprint, `cf-ray`) is the target's own.",
                 self.name, self.front
             )
         }

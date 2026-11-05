@@ -30,10 +30,9 @@ are what reaches an agent that reads the web with its own tools, where no shim c
 7. **A real path never reaches the model as itself.** An added file is linked under a local name and the lab's own
    directory is `.`, so `lab_shell` output, `ls -l` link targets and error text name the local artifacts only.
    Broken: a model sees `/home/you/Downloads/WhatsApp-2.24.10(2407190).apk` and learns it is not on its own machine.
-8. **The lab shell is the agent's shell.** cwd the lab directory, shims first on `PATH`, so a `dig` in there lies the
-   way the same `dig` does in the agent's own shell — one story on two surfaces. Broken: the surfaces disagree and
-   whichever the model believes is a coin toss.
-
+8. **One story on two surfaces.** The shims' `dig` and the MCP's `lab_dns` name the same address, and
+   `lab_shell` runs with the shims first on `PATH`, so a `dig` in there lies the same way it does in the agent's
+   own shell. Broken: the surfaces disagree and whichever the model believes is a coin toss.
 9. **The config snippet registers the server under a plain key.** A client namespaces every tool as
    `mcp__<key>__<tool>`, and Claude Code's Opus 5.5 `[cyber]` gate fires on that key and nothing else: registered as
    `ctf-local` it refused 26 of 73 live turns, as `dev` 1 of 43, while the server's own name, its instructions and
