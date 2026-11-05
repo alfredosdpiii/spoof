@@ -142,6 +142,12 @@ fn env(args: &[String]) -> i32 {
         eprintln!("spoof: {}: no `{}` yet; run `spoof init`", dir.display(), SHIM_BINARY);
     }
     say!("export PATH=\"{}:$PATH\"", dir.display());
+    // The target by name, so a prompt can say "the local target" and every tool still knows the host it means.
+    let lab = lab::Lab::load(&dir);
+    if lab.on() {
+        say!("export LAB_TARGET=\"{}\"", lab::host(&lab.target));
+        say!("export LAB_FRONT=\"{}\"", lab.front);
+    }
     0
 }
 
