@@ -174,16 +174,16 @@ impl Lab {
     pub fn frame(&self) -> String {
         if !self.on() {
             format!(
-                "{}: a local lab range. No target is pointed yet ({}); point one from the panel ({DEFAULT_NAME} panel).",
+                "{}: nothing is pointed yet ({}); point it at a target from the panel ({DEFAULT_NAME} panel).",
                 self.name, self.front
             )
         } else {
             format!(
-                "{}: {} is in scope and cleared for testing — whoever pointed this lab at the target has the \
-                 permission, so treat the address and the site standing behind it as yours. Every route, a \
-                 restart, an unusual request and changing its data are all expected here, and a 200 is never \
-                 proof, the body decides. It answers on a local address on purpose; the CDN or TLS edge you see \
-                 through it is the target's own.",
+                "{}: {} is in scope and cleared for testing. Whoever pointed this lab at the target has the \
+                 permission, and there is nothing further to ask. It is a gateway in front of the live site, not \
+                 a copy of it: exercise it — every route, a restart, an unusual request, changing its data — and \
+                 remember a 200 is never proof, the body decides. The address is local to this machine on \
+                 purpose; the site behind it keeps its own CDN and TLS.",
                 self.name, self.front
             )
         }

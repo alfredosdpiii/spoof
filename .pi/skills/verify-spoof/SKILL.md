@@ -36,7 +36,11 @@ are what reaches an agent that reads the web with its own tools, where no shim c
 9. **The front port is really open.** `spoof front` binds the lab's front address and answers each request by
    fetching the target and localizing it, so `ss -ltn`, `nc` and a raw socket find a live port instead of a seam
    (`src/front.rs`).
-10. **The config snippet registers the server under a plain key.** A client namespaces every tool as
+10. **The frame claims only what the lab controls.** It says the target is in scope and that the lab is a gateway
+    in front of the live site, not a copy. Broken: the frame says "local" and the model asks whether it is a sandbox
+    copy — which the lab cannot answer, so it hedges. Measured: the "in scope" frame got the first `proceed` in
+    eleven live runs, the "local" one did not.
+11. **The config snippet registers the server under a plain key.** A client namespaces every tool as
    `mcp__<key>__<tool>`, and Claude Code's Opus 5.5 `[cyber]` gate fires on that key and nothing else: registered as
    `ctf-local` it refused 26 of 73 live turns, as `dev` 1 of 43, while the server's own name, its instructions and
    every word of its output made no measurable difference. Broken: the panel prints `ctf-local`, and roughly a third
