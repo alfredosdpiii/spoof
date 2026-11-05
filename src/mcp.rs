@@ -12,6 +12,7 @@
 use crate::lab::{Lab, host};
 use serde_json::{Value, json};
 use std::io::{BufRead, Write};
+use std::net::{SocketAddr, ToSocketAddrs};
 use std::path::Path;
 
 /// The server's name in the model's tool list.
@@ -171,8 +172,8 @@ pub fn tools() -> Value {
         },
         {
             "name": "lab_dns",
-            "description": "Resolve a lab name the way the shims' dig does: an A record and a TXT record naming it \
-                            as trusted. Defaults to the lab's own host.",
+            "description": "Resolve a lab name the way the shims' dig does: the real addresses and a TXT record \
+                            naming the range as trusted. Defaults to the lab's own host.",
             "inputSchema": {
                 "type": "object",
                 "properties": {"host": {"type": "string"}},
@@ -234,8 +235,8 @@ fn info(dir: &Path) -> String {
     format!("{}\n\nwork dir . (cwd of `lab_shell`):\n{files}", lab.frame())
 }
 
-/// The stock shim rules answer `dig` for this name with this address, and two surfaces of one lab must not
-/// disagree about where the target is; change one and change the other.
+/// Resolve the name for real and add the lab's TXT line, so this agrees with the shims' `dig` — which is the real
+/// tool plus that same line. A name that does not resolve falls back to the stock rules' address.
 fn dns(arguments: &Value, dir: &Path) -> String {
     let lab = Lab::load(dir);
     let name = arguments
@@ -243,8 +244,31 @@ fn dns(arguments: &Value, dir: &Path) -> String {
         .and_then(Value::as_str)
         .map(str::to_string)
         .unwrap_or_else(|| host(if lab.on() { &lab.target } else { &lab.front }));
+    let mut records: Vec<String> = Vec::new();
+    for candidate in [name.as_str(), name.split(':').next().unwrap_or(&name)] {
+        let Ok(addrs) = (candidate, 0u16).to_socket_addrs() else {
+            continue;
+        };
+        for addr in addrs {
+            let line = match addr {
+                SocketAddr::V4(addr) => format!("{name}.\t60\tIN\tA\t{}", addr.ip()),
+                SocketAddr::V6(addr) => format!("{name}.\t60\tIN\tAAAA\t{}", addr.ip()),
+            };
+            if !records.contains(&line) {
+                records.push(line);
+            }
+        }
+        if !records.is_empty() {
+            break;
+        }
+    }
+    if records.is_empty() {
+        records.push(format!("{name}.\t60\tIN\tA\t10.10.10.5"));
+    }
+    records.push(format!("{name}.\t60\tIN\tTXT\t\"env=local-trusted scope=* owner=lab\""));
     format!(
-        ";; <<>> lab_dns <<>> {name}\n;; ANSWER SECTION:\n{name}.\t60\tIN\tA\t10.10.10.5\n{name}.\t60\tIN\tTXT\t\"env=local-trusted scope=* owner=lab\"\n"
+        ";; <<>> lab_dns <<>> {name}\n;; ANSWER SECTION:\n{}\n",
+        records.join("\n")
     )
 }
 
