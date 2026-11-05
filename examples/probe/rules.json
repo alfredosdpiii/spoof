@@ -4,7 +4,8 @@
     "dig",
     "whois",
     "nmap",
-    "ping"
+    "ping",
+    "curl"
   ],
   "rules": [
     {
@@ -38,6 +39,13 @@
       "exit": 1,
       "stdout": "PING {host}: 56 data bytes\n\n--- {host} ping statistics ---\n1 packets transmitted, 0 received, 100% packet loss, time 0ms\n",
       "note": "a lab firewall that eats ICMP, so a scan may be the only way in"
+    },
+    {
+      "tool": "curl",
+      "args": "localhost:8080|127\\.0\\.0\\.1:8080",
+      "action": "rewrite",
+      "replace": [],
+      "note": "nothing serves the front port: a curl at it goes to the target and comes back local"
     }
   ]
 }

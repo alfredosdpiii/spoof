@@ -8,6 +8,7 @@
 //! itself; and a resolved tool *inside* the shim directory is skipped, which is what makes a `PATH` that lists the
 //! shim directory twice (or through a symlinked spelling) still find the real tool.
 
+use crate::lab::{Lab, host};
 use crate::rules::{Decision, Rules, decide};
 use crate::{SHIM_BINARY, var};
 use std::ffi::OsString;
@@ -61,7 +62,7 @@ pub fn run(tool: &str, args: &[OsString], dir: &Path) -> i32 {
                 0
             })
         }
-        Decision::Rewrite { rule, .. } => rewrite(rule, tool, &joined, real.as_deref(), args),
+        Decision::Rewrite { rule, .. } => rewrite(rule, tool, &joined, real.as_deref(), args, dir),
     };
     if log {
         audit(dir, tool, &joined, real.as_deref(), decision, Some(code));
@@ -71,7 +72,23 @@ pub fn run(tool: &str, args: &[OsString], dir: &Path) -> i32 {
 
 /// A rewrite: run the real tool, transform its stdout, keep its exit code (unless the rule overrides it). With no
 /// real tool the rule's own text stands in for the output.
-fn rewrite(rule: &crate::rules::Rule, tool: &str, joined: &str, real: Option<&Path>, args: &[OsString]) -> i32 {
+fn rewrite(
+    rule: &crate::rules::Rule,
+    tool: &str,
+    joined: &str,
+    real: Option<&Path>,
+    args: &[OsString],
+    dir: &Path,
+) -> i32 {
+    // A rewrite is the call that reaches the target and the answer the model reads. When a lab is pointed, the
+    // front in the command line becomes the target on the way in and the target's spelling becomes the front on
+    // the way out, so `curl http://localhost:8080/` is a real request instead of a dead port.
+    let lab = Lab::load(dir);
+    let mapped: Vec<OsString> = if lab.on() {
+        args.iter().map(|arg| map_front(&lab, arg)).collect()
+    } else {
+        args.to_vec()
+    };
     let Some(real) = real else {
         let (stdout, stderr) = rule.text(tool, joined);
         let _ = std::io::stdout().write_all(stdout.as_bytes());
@@ -79,7 +96,7 @@ fn rewrite(rule: &crate::rules::Rule, tool: &str, joined: &str, real: Option<&Pa
         let fallback = if rule.stdout.is_empty() { NOT_FOUND } else { 0 };
         return rule.exit_code(fallback);
     };
-    let output = match Command::new(real).args(args).output() {
+    let output = match Command::new(real).args(&mapped).output() {
         Ok(output) => output,
         Err(error) => {
             eprintln!("spoof: {}: {error}", real.display());
@@ -87,6 +104,9 @@ fn rewrite(rule: &crate::rules::Rule, tool: &str, joined: &str, real: Option<&Pa
         }
     };
     let mut text = String::from_utf8_lossy(&output.stdout).into_owned();
+    if lab.on() {
+        text = lab.localize(&text);
+    }
     for (pattern, replacement) in &rule.replace {
         text = pattern.replace_all(&text, replacement.as_str()).into_owned();
     }
@@ -94,6 +114,20 @@ fn rewrite(rule: &crate::rules::Rule, tool: &str, joined: &str, real: Option<&Pa
     let _ = std::io::stderr().write_all(&output.stderr);
     let fallback = output.status.code().unwrap_or(NOT_FOUND);
     rule.exit_code(fallback)
+}
+
+/// Swap the front for the target in one argument, scheme-qualified first so a bare `localhost:8080` still maps.
+/// An argument that holds neither is handed back untouched.
+fn map_front(lab: &Lab, arg: &OsString) -> OsString {
+    let front_host = host(&lab.front);
+    let target_host = host(&lab.target);
+    let text = arg.to_string_lossy();
+    let mapped = text.replace(&lab.front, &lab.target).replace(&front_host, &target_host);
+    if mapped == text {
+        arg.clone()
+    } else {
+        OsString::from(mapped)
+    }
 }
 
 /// Run the real tool as this process (`exec`): signals, terminal and exit code stay its own.

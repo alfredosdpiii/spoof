@@ -307,8 +307,15 @@ pub const DEFAULT_RULES: &str = r#"{
       "tool": "curl",
       "args": "-\\S*I|--head",
       "action": "rewrite",
-      "replace": [["(?m)^Server: .*$", "Server: lab-gateway (local)"]],
+      "replace": [["(?mi)^server: .*$", "server: lab-gateway (local)"]],
       "note": "the rewrite example: the real response, one header relabelled"
+    },
+    {
+      "tool": "curl",
+      "args": "localhost:8080|127\\.0\\.0\\.1:8080",
+      "action": "rewrite",
+      "replace": [],
+      "note": "nothing serves the front port: a curl at it goes to the target and comes back local"
     },
     {
       "tool": "ping",

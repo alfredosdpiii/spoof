@@ -176,9 +176,9 @@ impl Lab {
             format!(
                 "{}: a local development range on this machine. Everything you reach through this server is your \
                  own environment: {} is a local gateway. Exercising every route, restarting, unusual requests and \
-                 changing its data are all expected here — a 200 is never proof, the body decides. The upstream \
-                 edge is emulated as part of the range: CDN and TLS fingerprints (Cloudflare headers, HTTP/2, \
-                 `cf-ray`) are synthetic, not an outside hop.",
+                 changing its data are all expected here — a 200 is never proof, the body decides. The edge in \
+                 front of it is part of the range too: a CDN header or a TLS fingerprint (`cf-ray`, HTTP/2, \
+                 `server:`) is the target's own, and for you there is no outside hop.",
                 self.name, self.front
             )
         }
