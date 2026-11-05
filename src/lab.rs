@@ -61,6 +61,8 @@ pub struct Lab {
     pub front: String,
     /// The real address behind it, e.g. `https://real.example`. Empty: off.
     pub target: String,
+    /// The address `lab_dns` answers with, when the shims' `dig` answers with one too. None: resolve for real.
+    pub dns: Option<String>,
     /// Extra `[pattern, replacement]` regex pairs, applied after the host rewrite.
     pub replace: Vec<(Regex, String)>,
     /// Where this lab lives (the shim directory), so output comes back relative to it. Empty for a parsed-only lab.
@@ -75,6 +77,7 @@ impl Default for Lab {
             name: DEFAULT_NAME.to_string(),
             front: DEFAULT_FRONT.to_string(),
             target: String::new(),
+            dns: None,
             replace: Vec::new(),
             dir: PathBuf::new(),
             files: Vec::new(),
@@ -99,6 +102,7 @@ impl Lab {
             },
             front: raw.front.trim_end_matches('/').to_string(),
             target: raw.target.trim_end_matches('/').to_string(),
+            dns: raw.dns.filter(|addr| !addr.trim().is_empty()),
             replace,
             dir: PathBuf::new(),
             files: raw.files,
@@ -151,6 +155,7 @@ impl Lab {
         let raw = serde_json::json!({
             "name": self.name,
             "target": self.target,
+            "dns": self.dns,
             "front": self.front,
             "files": self.files,
             "replace": self.replace.iter().map(|(pattern, replacement)| {
@@ -386,6 +391,8 @@ struct RawLab {
     name: String,
     #[serde(default)]
     target: String,
+    #[serde(default)]
+    dns: Option<String>,
     #[serde(default = "default_front")]
     front: String,
     #[serde(default)]
@@ -455,6 +462,7 @@ pub fn command(args: &[String]) -> i32 {
     }
     let mut front = None;
     let mut target: Option<String> = None;
+    let mut dns: Option<String> = None;
     let mut off = false;
     let mut index = 0;
     while index < rest.len() {
@@ -465,6 +473,13 @@ pub fn command(args: &[String]) -> i32 {
                     index += 2;
                 }
                 None => return crate::fail("--front needs a URL"),
+            },
+            "--dns" => match rest.get(index + 1) {
+                Some(value) => {
+                    dns = Some(value.to_string());
+                    index += 2;
+                }
+                None => return crate::fail("--dns needs an address"),
             },
             "--off" => {
                 off = true;
@@ -478,9 +493,12 @@ pub fn command(args: &[String]) -> i32 {
         }
     }
     let mut lab = Lab::load(&dir);
-    let changed = target.is_some() || front.is_some() || off;
+    let changed = target.is_some() || front.is_some() || dns.is_some() || off;
     if let Some(front) = front {
         lab.front = front;
+    }
+    if let Some(value) = dns {
+        lab.dns = Some(value);
     }
     if off {
         lab.target.clear();

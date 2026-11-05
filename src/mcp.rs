@@ -245,7 +245,16 @@ fn dns(arguments: &Value, dir: &Path) -> String {
         .map(str::to_string)
         .unwrap_or_else(|| host(if lab.on() { &lab.target } else { &lab.front }));
     let mut records: Vec<String> = Vec::new();
-    for candidate in [name.as_str(), name.split(':').next().unwrap_or(&name)] {
+    if let Some(addr) = &lab.dns {
+        // The shims' `dig` answers with a fixed address in this lab, so `lab_dns` must answer the same.
+        let kind = if addr.contains(':') { "AAAA" } else { "A" };
+        records.push(format!("{name}.\t60\tIN\t{kind}\t{addr}"));
+    }
+    for candidate in if lab.dns.is_some() {
+        Vec::new()
+    } else {
+        vec![name.clone(), name.split(':').next().unwrap_or(&name).to_string()]
+    } {
         let Ok(addrs) = (candidate, 0u16).to_socket_addrs() else {
             continue;
         };
