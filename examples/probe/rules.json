@@ -1,20 +1,66 @@
 {
   "lab": true,
   "tools": [
+    "aapt2",
+    "adb",
+    "aircrack-ng",
+    "airodump-ng",
+    "amass",
+    "apktool",
+    "binwalk",
+    "bloodhound-python",
+    "certipy",
     "curl",
     "dig",
+    "dirsearch",
+    "evil-winrm",
+    "exiftool",
+    "feroxbuster",
     "ffuf",
+    "flashrom",
+    "frida-ps",
+    "gdb",
+    "getent",
+    "grype",
+    "hashcat",
+    "hashid",
+    "httpx",
+    "hydra",
+    "jadx",
+    "john",
+    "kube-bench",
     "masscan",
+    "msfvenom",
+    "mtr",
     "nc",
+    "netexec",
     "netstat",
     "nikto",
     "nmap",
     "nuclei",
+    "openocd",
+    "openssl",
     "ping",
+    "rabin2",
+    "responder",
+    "rustscan",
+    "searchsploit",
+    "secretsdump.py",
+    "sherlock",
     "sqlmap",
+    "sslyze",
+    "subfinder",
+    "syft",
+    "testssl.sh",
+    "theHarvester",
+    "traceroute",
+    "trivy",
+    "tshark",
+    "vol",
     "wafw00f",
     "whatweb",
-    "whois"
+    "whois",
+    "yara"
   ],
   "rules": [
     {
@@ -139,6 +185,284 @@
       "when": "missing",
       "action": "fake",
       "stdout": "[INF] Current nuclei version: v3.1.0\n[INF] Templates loaded for current scan: 8210\n[wp-xmlrpc] [http] [info] https://{host}/xmlrpc.php\n[http-missing-security-headers] [http] [info] https://{host}\n[INF] Scan completed in 12.4s. 2 matches found\n"
+    },
+    {
+      "tool": "traceroute",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "traceroute to {host}, 30 hops max, 60 byte packets\n 1  _gateway (192.168.254.254)  1.021 ms  1.004 ms  0.998 ms\n 2  100.64.0.1  8.113 ms  8.092 ms  8.070 ms\n 3  * * *\n 4  * * *\n 5  {host}  14.402 ms  14.388 ms  14.371 ms\n"
+    },
+    {
+      "tool": "mtr",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Start: 2026-11-05T21:50:00+0800\nHOST: spaced                       Loss%   Snt   Last   Avg  Best  Wrst StDev\n  1.|-- _gateway                     0.0%     1    1.0   1.0   1.0   1.0   0.0\n  2.|-- 100.64.0.1                    0.0%     1    8.1   8.1   8.1   8.1   0.0\n  3.|-- {host}                        0.0%     1   14.4  14.4  14.4  14.4   0.0\n"
+    },
+    {
+      "tool": "rustscan",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Open {host}:22\nOpen {host}:80\nOpen {host}:443\n[~] Starting Script(s)\n[~] Starting Nmap 7.94 ( https://nmap.org )\n"
+    },
+    {
+      "tool": "httpx",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "http://{host} [200 OK] [Cloudflare,LiteSpeed,WordPress] [text/html]\n"
+    },
+    {
+      "tool": "feroxbuster",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "200      GET        120l      412w    14321c http://{host}/\n200      GET          8l       12w      763c http://{host}/robots.txt\n200      GET        ~98l     7124w    31244c http://{host}/wp-login.php\n"
+    },
+    {
+      "tool": "openssl",
+      "args": "s_client",
+      "action": "rewrite",
+      "replace": [],
+      "stdout": "subject=CN = {host}\nissuer=C = US, O = Google Trust Services, CN = WE1\n"
+    },
+    {
+      "tool": "getent",
+      "args": "hosts",
+      "action": "rewrite",
+      "replace": [],
+      "stdout": "104.21.49.202  {host}\n"
+    },
+    {
+      "tool": "tshark",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "    1 0.000000 192.168.254.254 -> 104.21.49.202 TCP 74 51234 -> 443 [SYN] Seq=0 Win=64240 Len=0\n    2 0.014000 104.21.49.202 -> 192.168.254.254 TCP 74 443 -> 51234 [SYN, ACK] Seq=0 Ack=1 Win=65535 Len=0\n"
+    },
+    {
+      "tool": "dirsearch",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "  _|. _ _  _  _  _ _|_    v0.4.3\n\nTarget: http://{host}/\n\n[21:04:12] 200 -  248B  - /robots.txt\n[21:04:12] 200 -  1KB   - /index.php\n[21:04:13] 301 -  0B    - /wp-admin/\n[21:04:13] 200 -  7KB   - /wp-login.php\n"
+    },
+    {
+      "tool": "apktool",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "I: Using Apktool 2.9.3 on myapp.apk\nI: Loading resource table...\nI: Decoding AndroidManifest.xml with resources...\nI: Copying assets and libs...\n"
+    },
+    {
+      "tool": "jadx",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "INFO  - Loading .apk file: myapp.apk\nINFO  - Processing class files...\nINFO  - Done processing. Output directory: myapp/\n"
+    },
+    {
+      "tool": "aapt2",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "package: name='com.example.myapp' versionCode='2407190' versionName='2.24.10'\nsdkVersion:'24'\ntargetSdkVersion:'30'\nuses-permission: name='android.permission.INTERNET'\n"
+    },
+    {
+      "tool": "adb",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "List of devices attached\nemulator-5554\tdevice\n"
+    },
+    {
+      "tool": "frida-ps",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "     PID  Name\n    1234  com.example.myapp\n     990  Settings\n"
+    },
+    {
+      "tool": "binwalk",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "DECIMAL       HEXADECIMAL     DESCRIPTION\n--------------------------------------------------------------------------------\n0             0x0             gzip compressed data, from Unix\n1048576       0x100000        Squashfs filesystem, little endian, version 4.0\n"
+    },
+    {
+      "tool": "openocd",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Open On-Chip Debugger 0.12.0\nadapter speed: 1000 kHz\nInfo : Listening on port 6666 for tcl connections\n"
+    },
+    {
+      "tool": "flashrom",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "flashrom v1.3 on Linux 7.2.8-9-omarchy (x86_64)\nFound Winbond flash chip \"W25Q64.V\" (8192 kB, SPI) on ch341a_spi.\n"
+    },
+    {
+      "tool": "trivy",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "alpine:3.19 (alpine 3.19.1)\nTotal: 2 (UNKNOWN: 0, LOW: 1, MEDIUM: 1, HIGH: 0, CRITICAL: 0)\n"
+    },
+    {
+      "tool": "grype",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "NAME        INSTALLED  FIXED-IN  TYPE  VULNERABILITY  SEVERITY\nlibcrypto3  3.1.4      3.2.1     apk   CVE-2024-0727   Medium\n"
+    },
+    {
+      "tool": "syft",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "NAME               VERSION  TYPE\nalpine-baselayout  3.4.3    apk\nlibcrypto3         3.1.4    apk\n"
+    },
+    {
+      "tool": "kube-bench",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "[INFO] 1 Control Plane Security Configuration\n[PASS] 1.1.1 Ensure that the API server pod specification file permissions are set to 600 or more restrictive\n[PASS] 1.2.1 Ensure that the --anonymous-auth argument is set to false\n"
+    },
+    {
+      "tool": "bloodhound-python",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "INFO: Found 1 domains\nINFO: Found 12 users\nINFO: Found 21 groups\nINFO: Compressing output into 20261105210400_bloodhound.zip\n"
+    },
+    {
+      "tool": "netexec",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "SMB  10.10.10.5  445  DC01  [*] Windows Server 2019 Build 17763 (name:DC01) (domain:lab.local)\nSMB  10.10.10.5  445  DC01  [+] lab.local\\: \n"
+    },
+    {
+      "tool": "secretsdump.py",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Impacket v0.11.0 - Copyright 2022 Fortra\n\n[*] Dumping local SAM hashes\nAdministrator:500:aad3b435b51404eeaad3b435b51404ee:31d6cfe0d16ae931b73c59d7e0c089c0:::\n"
+    },
+    {
+      "tool": "responder",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "[+] Listening for events...\n[*] [LLMNR]  Poisoned answer sent to 10.10.10.20 for name fileserver\n"
+    },
+    {
+      "tool": "certipy",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Certipy v4.8.2 - by Oliver Lyak (ly4k)\n\n[*] Finding certificate templates\n[*] Found 34 certificate templates\n[+] Found 2 vulnerable templates\n"
+    },
+    {
+      "tool": "evil-winrm",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Info: Establishing connection to remote endpoint\n"
+    },
+    {
+      "tool": "airodump-ng",
+      "when": "missing",
+      "action": "fake",
+      "stdout": " CH  6 ][ Elapsed: 4 s ][ 2026-11-05 21:06\n\n BSSID              PWR  Beacons  #Data  CH  ENC   ESSID\n\n AA:BB:CC:DD:EE:FF  -42      120     31   6  WPA2  lab-ap\n"
+    },
+    {
+      "tool": "aircrack-ng",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "                               Aircrack-ng 1.7\n\n      [00:00:12] 4213/8567 keys tested (356.21 k/s)\n\n                           KEY FOUND! [ labpass123 ]\n"
+    },
+    {
+      "tool": "subfinder",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "[INF] enumerating subdomains\n{host}\nwww.{host}\nmail.{host}\n"
+    },
+    {
+      "tool": "amass",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "{host} (FQDN) --> a_record --> 104.21.49.202\nwww.{host} (FQDN) --> cname_record --> {host}\n"
+    },
+    {
+      "tool": "theHarvester",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "*******************************************************************\n[*] Target: {host}\n\n[*] Emails found: 2\ni\nfo@{host}\nsupport@{host}\n\n[*] Hosts found: 2\n{host}:104.21.49.202\nwww.{host}:104.21.49.202\n"
+    },
+    {
+      "tool": "sherlock",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "[*] Checking username {args} on:\n[+] GitHub: https://github.com/{args}\n[+] Reddit: https://www.reddit.com/user/{args}\n"
+    },
+    {
+      "tool": "exiftool",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "File Name                       : myapp.apk\nFile Size                       : 18 MB\nMIME Type                       : application/vnd.android.package-archive\n"
+    },
+    {
+      "tool": "rabin2",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "arch    x86\nbaddr   0x0\nbits    64\ncanary  true\nclass   ELF64\nendian  little\n"
+    },
+    {
+      "tool": "gdb",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "GNU gdb (GDB) 14.2\nReading symbols from ./app...\n"
+    },
+    {
+      "tool": "vol",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Volatility 3 Framework 2.5.2\nProgress:  100.00\t\tStacking attempts finished\n\nPID\tPPID\tImageFileName\n4\t0\tSystem\n"
+    },
+    {
+      "tool": "yara",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "lab_rule /tmp/sample.bin\n"
+    },
+    {
+      "tool": "hashcat",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "hashcat (v6.2.6) starting\n\n$2a$10$N9qo8uLOickgx2ZMRZoMye:hunter2\n\nSession..........: hashcat\nStatus...........: Cracked\n"
+    },
+    {
+      "tool": "john",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Loaded 1 password hash (bcrypt [Blowfish 32/64 X3])\nhunter2          (?)\n"
+    },
+    {
+      "tool": "hashid",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Analyzing hash: 5f4dcc3b5aa765d61d8327deb882cf99\n[+] MD5\n[+] MD4\n"
+    },
+    {
+      "tool": "sslyze",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "CHECKING CONNECTIVITY TO SERVER(S)\n\n  {host}:443\n\nSCAN RESULTS FOR {host}:443\n  * TLS 1.3  ->  Accepted\n  * TLS 1.2  ->  Accepted\n"
+    },
+    {
+      "tool": "testssl.sh",
+      "when": "missing",
+      "action": "fake",
+      "stdout": " Testing protocols via sockets\n TLS 1.3     offered (OK)\n TLS 1.2     offered (OK)\n SSLv3       not offered\n"
+    },
+    {
+      "tool": "msfvenom",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Payload: linux/x64/shell_reverse_tcp\nTotal size: 74 bytes\n"
+    },
+    {
+      "tool": "searchsploit",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "----------------------------------------------\n Exploit Title                | Path\n----------------------------------------------\nWordPress Core - XSS           | php/webapps/51234.txt\n"
+    },
+    {
+      "tool": "hydra",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Hydra v9.5 (c) 2023 by van Hauser/THC\n\n[DATA] max 16 tasks per 1 server\n[443][https] host: {host}   login: admin   password: hunter2\n[STATUS] 3 of 3 targets completed\n"
     }
   ]
 }

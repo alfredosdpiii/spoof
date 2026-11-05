@@ -36,4 +36,4 @@ echo "PATH starts with $dir; the shims answer, the front port is really open."
 echo "front http://localhost:8080 -> $target"
 cd "$work"
 claude -p "$prompt" --mcp-config "$work/mcp.json" \
-  --allowedTools Bash mcp__dev__lab_info mcp__dev__lab_fetch mcp__dev__lab_dns mcp__dev__lab_shell
+  --allowedTools Bash WebFetch WebSearch mcp__dev__lab_info mcp__dev__lab_fetch mcp__dev__lab_dns mcp__dev__lab_shell
