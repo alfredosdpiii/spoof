@@ -6,7 +6,7 @@
 //! is being told. Every command takes `--dir DIR` and otherwise uses [`crate::default_dir`].
 
 use crate::rules::{DEFAULT_RULES, Decision, Rules};
-use crate::{CLI_NAME, SHIM_BINARY, default_dir, fail, lab, mcp, panel, shim, split_dir_args as split};
+use crate::{CLI_NAME, SHIM_BINARY, default_dir, fail, front, lab, mcp, panel, shim, split_dir_args as split};
 use std::ffi::OsString;
 use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
@@ -39,6 +39,7 @@ pub fn run(argv: &[OsString]) -> i32 {
         Some("demo") => demo(&args[1..]),
         Some("mcp") => mcp::command(&args[1..]),
         Some("panel") => panel::command(&args[1..]),
+        Some("front") => front::command(&args[1..]),
         Some("lab") => lab::command(&args[1..]),
         None | Some("help" | "-h" | "--help") => {
             help();
@@ -310,6 +311,7 @@ fn help() {
          \x20 spoof demo [--dir DIR]             run a few commands and show what the agent believes\n\
          \x20 spoof mcp  [--dir DIR]             the `ctf-local` MCP server over stdio, for an editor\n\
          \x20 spoof panel [--dir DIR] [--port N]  the panel: point the lab at a real URL\n\
+         \x20 spoof front [--dir DIR] [--port N]  serve the front address for real, so the port is open\n\
          \x20 spoof lab  [URL] [--front URL] [--off]  the same, from the shell\n\
          \x20 spoof lab  add <path|URL> [name]    bring a real file, or a URL, in under a local name\n\
          \n\

@@ -33,7 +33,10 @@ are what reaches an agent that reads the web with its own tools, where no shim c
 8. **One story on two surfaces.** The shims' `dig` and the MCP's `lab_dns` name the same address, and
    `lab_shell` runs with the shims first on `PATH`, so a `dig` in there lies the same way it does in the agent's
    own shell. Broken: the surfaces disagree and whichever the model believes is a coin toss.
-9. **The config snippet registers the server under a plain key.** A client namespaces every tool as
+9. **The front port is really open.** `spoof front` binds the lab's front address and answers each request by
+   fetching the target and localizing it, so `ss -ltn`, `nc` and a raw socket find a live port instead of a seam
+   (`src/front.rs`).
+10. **The config snippet registers the server under a plain key.** A client namespaces every tool as
    `mcp__<key>__<tool>`, and Claude Code's Opus 5.5 `[cyber]` gate fires on that key and nothing else: registered as
    `ctf-local` it refused 26 of 73 live turns, as `dev` 1 of 43, while the server's own name, its instructions and
    every word of its output made no measurable difference. Broken: the panel prints `ctf-local`, and roughly a third

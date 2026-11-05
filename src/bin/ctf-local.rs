@@ -5,7 +5,7 @@
 //! page on 127.0.0.1 on the other. Installed (`cargo install --path . --bin ctf-local`) or run from `target/release`,
 //! the editor's config is `{"command": "/path/to/ctf-local", "args": ["mcp"]}` — the panel prints it, filled in.
 
-use spoof::{lab, mcp, panel};
+use spoof::{front, lab, mcp, panel};
 
 fn main() {
     std::process::exit(run());
@@ -18,6 +18,7 @@ fn run() -> i32 {
     match args.first().map(String::as_str) {
         None => panel::command(&[]),
         Some("panel") => panel::command(&rest(&args)),
+        Some("front") => front::command(&rest(&args)),
         Some("mcp") => mcp::command(&rest(&args)),
         Some("lab") => lab::command(&rest(&args)),
         Some("help" | "-h" | "--help") => {
@@ -44,6 +45,7 @@ fn help() {
          \x20 ctf-local                              the panel on 127.0.0.1:7777, opens a browser\n\
          \x20 ctf-local panel [--port N] [--no-open]  the same\n\
          \x20 ctf-local mcp                          the MCP server on stdio, for an editor\n\
+         \x20 ctf-local front [--port N]              serve the front address for real\n\
          \x20 ctf-local lab [URL] [--front URL] [--off]  point it at a target from the shell\n\
          \x20 ctf-local lab add <path|URL> [name]      link a real file in under a local name\n\
          \x20 ctf-local lab ls                         the files the lab is carrying\n\

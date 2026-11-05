@@ -21,9 +21,10 @@
 //!
 //! - [`rules`]: the rules file format and the decision (`decide`), the first match wins.
 //! - [`shim`]: intercept mode: resolve the real tool without recursing, then fake, rewrite or run it.
-//! - [`cli`]: `spoof init`, `env`, `list`, `log`, `demo`, `mcp`, `panel`, `lab`.
+//! - [`cli`]: `spoof init`, `env`, `list`, `log`, `demo`, `mcp`, `panel`, `front`, `lab`.
 
 pub mod cli;
+pub mod front;
 pub mod lab;
 pub mod mcp;
 pub mod panel;
