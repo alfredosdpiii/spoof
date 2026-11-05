@@ -91,7 +91,8 @@ Restore the edit, rerun, and the suite is green again.
   (the shim directory, a symlink to it, a real tool, a non-executable file, a missing directory).
 - Rust has no verifier installed on this machine (no Kani, no Loom), so these run the code itself over generated
   inputs rather than a model of it. `Rule::matches`/`Rule::applies` are the primitives the properties build on and
-  have their own cases in `gating_and_matching_are_both_required`.
+  have their own cases in `gating_and_matching_are_both_required`; the `{host}` fill has one in
+  `host_fills_from_the_last_argument_that_is_not_a_flag`.
 - Not covered: a `lab_shell` command that ignores its timeout or prints past 64 KiB, a download through `lab_add`,
   the gate's live refusal rate (nondeterministic; measure with `claude -p` against the mock MCP server and a varying
   `mcpServers` key — a plain key passed 1/43 turns, `ctf-local` 26/73),

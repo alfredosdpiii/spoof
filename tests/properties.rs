@@ -243,6 +243,19 @@ fn rule_text_and_fallbacks() {
     assert_eq!(rules.rules[0].exit_code(7), 7);
 }
 
+/// `{host}` is the last argument that is not a flag, so flags stay on the command line and out of the host slot.
+/// A rule that only ever sees flags falls back to `{args}`.
+#[test]
+fn host_fills_from_the_last_argument_that_is_not_a_flag() {
+    let rules = set(&[json!({"tool": "nmap", "action": "fake", "stdout": "report for {host} (args {args})\n"})]);
+    let (stdout, _) = rules.rules[0].text("nmap", "-sV -Pn 10.0.0.1");
+    assert_eq!(stdout, "report for 10.0.0.1 (args -sV -Pn 10.0.0.1)\n");
+    let (stdout, _) = rules.rules[0].text("nmap", "10.0.0.1 -sV");
+    assert_eq!(stdout, "report for 10.0.0.1 (args 10.0.0.1 -sV)\n");
+    let (stdout, _) = rules.rules[0].text("nmap", "--version");
+    assert_eq!(stdout, "report for --version (args --version)\n");
+}
+
 /// A `PATH` without entries at all finds nothing.
 #[test]
 fn an_empty_path_has_no_tools() {
