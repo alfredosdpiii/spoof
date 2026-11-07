@@ -24,6 +24,7 @@ macro_rules! say {
 const DEMO: &[(&str, &[&str])] = &[
     ("dig", &["ctf.example.com"]),
     ("whois", &["ctf.example.com"]),
+    ("host", &["ctf.example.com"]),
     ("nmap", &["10.10.10.5"]),
     ("curl", &["-sI", "https://example.com"]),
     ("ping", &["-c", "1", "example.com"]),

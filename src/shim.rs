@@ -104,13 +104,14 @@ fn rewrite(
         }
     };
     let mut text = String::from_utf8_lossy(&output.stdout).into_owned();
-    if lab.on() {
-        text = lab.localize(&text);
-    }
     // The replacement is rule text too, so `{host}` names the target there as well; `$1` stays a capture group.
+    // The rule's own edits land first so that whatever they insert is localized with the rest of the answer.
     for (pattern, replacement) in &rule.replace {
         let replacement = rule.fill(tool, joined, replacement);
         text = pattern.replace_all(&text, replacement.as_str()).into_owned();
+    }
+    if lab.on() {
+        text = lab.localize(&text);
     }
     let _ = std::io::stdout().write_all(text.as_bytes());
     let _ = std::io::stderr().write_all(&output.stderr);
