@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      # tests/ultron.rs names these two crates as path dependencies, so the suite needs the checkout beside it.
+      - name: the ultron checkout the end-to-end test names
+        run: git clone --depth 1 https://github.com/alfredosdpiii/ultron-rs.git ../ultron-rs-prep/repo
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --check
+      - run: cargo clippy --all-targets -- -D warnings
+      - run: cargo test

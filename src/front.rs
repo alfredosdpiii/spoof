@@ -70,9 +70,10 @@ fn run(dir: &Path, port: Option<u16>) -> i32 {
         Ok(listener) => listener,
         Err(error) => return crate::fail(&format!("front: {addr}: {error}")),
     };
+    let bound = listener.local_addr().map_or(addr, |address| address.to_string());
     let where_ = Lab::load(dir).target.clone();
     println!(
-        "spoof: front on http://{addr}/ -> {}",
+        "spoof: front on http://{bound}/ -> {}",
         if where_.is_empty() { "(no target yet)" } else { &where_ }
     );
     println!("  every request here goes to the target and comes back local; `ss -ltn` will show the port");

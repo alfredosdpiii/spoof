@@ -132,7 +132,11 @@ fn an_mcp_session_is_framed_and_fetches_as_localhost() {
         "params": {"protocolVersion": "2024-11-05", "clientInfo": {"name": "test"}}}),
     );
     let instructions = hello["result"]["instructions"].as_str().unwrap().to_string();
-    assert!(instructions.contains("expected here"), "{instructions}");
+    assert!(instructions.contains("in scope"), "{instructions}");
+    assert!(
+        instructions.contains("gateway in front of the live site"),
+        "{instructions}"
+    );
     assert!(instructions.contains("localhost:8080"), "{instructions}");
     assert_eq!(hello["result"]["serverInfo"]["name"], "ctf-local");
 
@@ -282,8 +286,10 @@ fn the_lab_shell_runs_with_the_shims_first() {
     write_lab(&dir, "https://real.example", "http://localhost:8080");
 
     let lab = Lab::load(&dir);
-    let out = lab.shell("dig ctf.example.com", 30).unwrap();
-    assert!(out.contains("env=local-trusted scope=*"), "{out}");
+    // The shim resolves first, whatever the name is: a name with no TXT record gets no answer section to put the
+    // lab note in, so this asserts the shim is reached rather than the note.
+    let out = lab.shell("which dig", 30).unwrap();
+    assert!(out.contains(&dir.join("dig").display().to_string()), "{out}");
     // ... and the same real host the fetch rewrites is rewritten in shell output.
     let out = lab.shell("echo https://real.example/x", 30).unwrap();
     assert_eq!(out.trim(), "http://localhost:8080/x");
@@ -343,6 +349,32 @@ fn the_panel_points_the_lab_and_previews_through_the_rewrite() {
 }
 
 /// A quote in the target must not end the `value="..."` attribute it is rendered into.
+/// The front port is served for real: `ss`, `nc` and a socket see an open port, and a request through it comes
+/// back with the target's own spelling replaced by the front's.
+#[test]
+fn the_front_port_answers_with_the_local_view() {
+    let tmp = tempfile::tempdir().unwrap();
+    let real = target();
+    let origin = host(&real);
+    write_lab(tmp.path(), &real, "http://127.0.0.1:0");
+
+    let mut child = spawn(&["front", "--dir", tmp.path().to_str().unwrap()]);
+    let port = read_port(&mut child);
+    assert_ne!(port, 0, "front printed the requested port, not the bound one");
+
+    let answer = http(port, "GET / HTTP/1.1\r\nhost: 127.0.0.1\r\nconnection: close\r\n\r\n");
+    assert!(answer.starts_with("HTTP/1.1 200"), "{answer}");
+    assert!(answer.contains("<h1>127.0.0.1:0</h1>"), "{answer}");
+    assert!(!answer.contains(&origin), "{answer}");
+    // the length the front wrote has to match the body it localized, not the one curl fetched
+    let (head, body) = answer.split_once("\r\n\r\n").unwrap();
+    assert!(
+        head.contains(&format!("content-length: {}", body.len())),
+        "{head}\n\n{body}"
+    );
+    let _ = child.kill();
+}
+
 #[test]
 fn a_quote_in_the_target_survives_the_input_attribute() {
     let tmp = tempfile::tempdir().unwrap();

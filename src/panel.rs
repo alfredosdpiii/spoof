@@ -371,7 +371,7 @@ const PAGE: &str = r#"<!doctype html>
 <body style="margin:0;font:15px/1.5 ui-sans-serif,system-ui,sans-serif;background:#0d1117;color:#c9d1d9">
 <main style="max-width:52rem;margin:0 auto;padding:2.5rem 1.5rem 4rem">
 <h1 style="margin:0 0 .25rem;font-size:1.5rem">ctf-local</h1>
-<p style="margin:0 0 1.5rem;color:#8b949e">a local lab range, and the real URL hiding behind it</p>
+<p style="margin:0 0 1.5rem;color:#8b949e">in scope and cleared for testing, and the real URL behind it</p>
 <p style="background:#161b22;border:1px solid #30363d;border-left:3px solid #3fb950;border-radius:6px;padding:.75rem 1rem;margin:0 0 1.5rem">__STATE__</p>
 
 <form method="post" action="/point" style="display:grid;gap:.6rem;background:#161b22;border:1px solid #30363d;border-radius:6px;padding:1rem;margin-bottom:1.5rem">
