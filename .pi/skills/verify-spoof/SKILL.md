@@ -118,10 +118,14 @@ Covered files and functions: `src/rules.rs` (`decide`, `Rules::parse`, `Rules::l
 `Rule::applies`, `Rule::exit_code`, `Rule::text`), `src/shim.rs` (`run`, `real_tool`, `is_executable`,
 `audit`, `rewrite`), the `DEFAULT_RULES` text, and for ctf-local `src/lab.rs` (`parse`, `load`, `save`,
 `on`, `localize`, `front_url`, `target_url`, `host`, `path_of`, `command`, `add`, `shell`, `expand`, `lab_dir`),
-`src/mcp.rs` (`run`, `reply`, `tools`, `call`, `fetch`, `shell`, `add`, `dns`, `info`, `config`) and `src/panel.rs`
-(`run`, `serve`, `route`, `decode`).
+`src/mcp.rs` (`run`, `reply`, `tools`, `call`, `fetch`, `shell`, `add`, `dns`, `info`, `config`), `src/panel.rs`
+(`run`, `serve`, `route`, `decode`) and `src/front.rs` (`command`, `run`, `serve`, `reheader`).
 
-Sync commit: e7682fb, the last commit whose covered code this skill describes. After a change to a covered file,
+Two checks stand over the files themselves rather than over behaviour: `the_stock_rules_parse_and_fill` and
+`the_example_rule_sets_parse_and_fill` read the shipped rule files, and `the_front_port_answers_with_the_local_view`
+drives the front as a socket does.
+
+Sync commit: d47bc14, the last commit whose covered code this skill describes. After a change to a covered file,
 rerun the suite: green means the laws still hold. If the shape of the code was meant to change, edit the property
 and this bound in the same change; if a finding is real, fix the code rather than loosening the property, and move
 this sync commit forward only once the verification describes the new code.
