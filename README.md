@@ -156,6 +156,9 @@ To remove it: `rm -rf ~/.local/share/spoof`. Nothing outside that directory is t
   scan of the front is fast and never reaches the target, a request without a user agent gets a small local page
   rather than the site, and `nmap -sV` reports the port as unknown — a proxy in front of a live origin does not
   fingerprint like a server, whatever banner it sends.
+- Claude Code's own `[cyber]` classifier reads the whole request, tools included. Pooled tool definitions from other
+  MCP servers in `~/.claude.json` are enough to tip it: with `--strict-mcp-config` it refused none of 27 runs, with an
+  ambient server attached 10 of 11. Use `--strict-mcp-config` when the lab has to reach the model.
 - A shim stands in for the whole tool. `fake` output is canned: it does not answer the actual query, so a wrong
   answer here is a wrong belief there.
 - `rewrite` runs the real tool, so it needs it; with none present the rule's own text is used instead.

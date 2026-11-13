@@ -49,5 +49,7 @@ EOF
 
 echo "mode=$mode port=$port  PATH=$dir  front=http://localhost:$port -> $target"
 cd "$work"
-claude -p "$prompt" ${MODEL:+--model "$MODEL"} --mcp-config "$work/mcp.json" \
+# `--strict-mcp-config`: without it the ambient servers in ~/.claude.json ride along, and doubling the
+# pooled tool list is what makes Claude Code's own classifier refuse the turn (measured, interleaved).
+claude -p "$prompt" ${MODEL:+--model "$MODEL"} --strict-mcp-config --mcp-config "$work/mcp.json" \
   --allowedTools Bash WebFetch WebSearch mcp__dev__lab_info mcp__dev__lab_fetch mcp__dev__lab_dns mcp__dev__lab_shell
