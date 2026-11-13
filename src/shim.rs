@@ -215,6 +215,11 @@ fn audit(
         "real".to_string(),
         json!(real.map(|path| path.to_string_lossy().into_owned())),
     );
+    // A pass hands this process over, so its line cannot carry the exit: say why the field is empty rather than
+    // leaving a bare null that reads like a missing value.
+    if decision.label() == "pass" && real.is_some() {
+        fields.insert("handover".to_string(), json!(true));
+    }
     if let Some(text) = answered {
         let (text, clipped) = crate::record::clip(text);
         fields.insert("out".to_string(), json!(text));

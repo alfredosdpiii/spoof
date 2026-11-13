@@ -161,8 +161,10 @@ fn lab_mode_logs_what_the_agent_was_told() {
     assert!(audit[0]["real"].as_str().unwrap().ends_with("/real/dig"));
     assert_eq!(audit[1]["decision"], "pass");
     assert_eq!(audit[1]["rule"], serde_json::Value::Null);
-    // A pass is logged before the process is handed over, so it carries no exit code of its own.
+    // A pass is logged before the process is handed over: no exit of its own, and the line says why.
     assert_eq!(audit[1]["exit"], serde_json::Value::Null);
+    assert_eq!(audit[1]["handover"], true);
+    assert_eq!(audit[0]["handover"], serde_json::Value::Null);
 }
 
 /// A rules file with a typo fails open: one note on stderr, and the agent's command runs anyway.
