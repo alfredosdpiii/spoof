@@ -152,6 +152,10 @@ To remove it: `rm -rf ~/.local/share/spoof`. Nothing outside that directory is t
   (a binary body survives, a compressed one only because `curl --compressed` decoded it first) and a host spelled in
   pieces (`\.`-escaped regexes, a URL-encoded copy) is not rewritten. The panel is `127.0.0.1`, GET/POST only, no
   auth, and a lab switch.
+- The front answers a scanner's probe itself and proxies only a client: a probe carries no user agent. So a port
+  scan of the front is fast and never reaches the target, a request without a user agent gets a small local page
+  rather than the site, and `nmap -sV` reports the port as unknown — a proxy in front of a live origin does not
+  fingerprint like a server, whatever banner it sends.
 - A shim stands in for the whole tool. `fake` output is canned: it does not answer the actual query, so a wrong
   answer here is a wrong belief there.
 - `rewrite` runs the real tool, so it needs it; with none present the rule's own text is used instead.

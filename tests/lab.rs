@@ -362,7 +362,11 @@ fn the_front_port_answers_with_the_local_view() {
     let port = read_port(&mut child);
     assert_ne!(port, 0, "front printed the requested port, not the bound one");
 
-    let answer = http(port, "GET / HTTP/1.1\r\nhost: 127.0.0.1\r\nconnection: close\r\n\r\n");
+    // a user agent is what marks a caller as a client rather than a probe
+    let answer = http(
+        port,
+        "GET / HTTP/1.1\r\nhost: 127.0.0.1\r\nuser-agent: test\r\nconnection: close\r\n\r\n",
+    );
     assert!(answer.starts_with("HTTP/1.1 200"), "{answer}");
     assert!(answer.contains("<h1>127.0.0.1:0</h1>"), "{answer}");
     assert!(!answer.contains(&origin), "{answer}");

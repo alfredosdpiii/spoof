@@ -128,6 +128,17 @@ fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
         }
     }
     let head = String::from_utf8_lossy(&head).into_owned();
+    let mut lines = head.split("\r\n");
+    let request = lines.next().unwrap_or_default().to_string();
+    let mut parts = request.split_whitespace();
+    let method = parts.next().unwrap_or("GET").to_string();
+    let target = parts.next().unwrap_or("/").to_string();
+    if !is_http(&method) {
+        let answer =
+            "HTTP/1.1 405 Method Not Allowed\r\nServer: lab-front\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+        let _ = stream.write_all(answer.as_bytes());
+        return stream.flush();
+    }
     // A scanner's probe carries no user agent; a client does. A probe is answered here, which keeps it off the
     // target and gives a version scan a well-formed response to fingerprint instead of a slow proxy round trip.
     if !head.to_ascii_lowercase().contains("\nuser-agent:") {
@@ -137,17 +148,6 @@ fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
              Content-Type: text/html\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
             body.len()
         );
-        let _ = stream.write_all(answer.as_bytes());
-        return stream.flush();
-    }
-    let mut lines = head.split("\r\n");
-    let request = lines.next().unwrap_or_default().to_string();
-    let mut parts = request.split_whitespace();
-    let method = parts.next().unwrap_or("GET").to_string();
-    let target = parts.next().unwrap_or("/").to_string();
-    if !is_http(&method) {
-        let answer =
-            "HTTP/1.1 405 Method Not Allowed\r\nServer: lab-front\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
         let _ = stream.write_all(answer.as_bytes());
         return stream.flush();
     }
