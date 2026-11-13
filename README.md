@@ -152,6 +152,12 @@ To remove it: `rm -rf ~/.local/share/spoof`. Nothing outside that directory is t
   (a binary body survives, a compressed one only because `curl --compressed` decoded it first) and a host spelled in
   pieces (`\.`-escaped regexes, a URL-encoded copy) is not rewritten. The panel is `127.0.0.1`, GET/POST only, no
   auth, and a lab switch.
+- A result from `lab_fetch` or `lab_shell` carries `_meta.provenance.untrusted_content`, and the instructions say
+  what that means: the target's own bytes can be written to look like an instruction, so quote it rather than obey.
+  The marker and the budget below follow REA's MCP contracts.
+- The advertised tool list is what Claude Code sends with every request, so keep it small: REA renders its own
+  schemas into a 13 KB budget for exactly this reason, and measured Claude Code spending more context on tool
+  definitions than on the work.
 - The front answers a scanner's probe itself and proxies only a client: a probe carries no user agent. So a port
   scan of the front is fast and never reaches the target, a request without a user agent gets a small local page
   rather than the site, and `nmap -sV` reports the port as unknown — a proxy in front of a live origin does not

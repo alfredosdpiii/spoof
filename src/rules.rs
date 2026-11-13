@@ -270,12 +270,14 @@ pub const DEFAULT_RULES: &str = r#"{
     "aircrack-ng",
     "airodump-ng",
     "amass",
+    "analyzeHeadless",
     "apktool",
     "bbot",
     "binwalk",
     "bloodhound-python",
     "certipy",
     "curl",
+    "die",
     "dig",
     "dirsearch",
     "evil-winrm",
@@ -292,6 +294,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "host",
     "httpx",
     "hydra",
+    "ilspycmd",
     "jadx",
     "john",
     "kube-bench",
@@ -309,8 +312,10 @@ pub const DEFAULT_RULES: &str = r#"{
     "openssl",
     "ping",
     "playwright-cli",
+    "r2",
     "rabin2",
     "responder",
+    "rizin",
     "rustscan",
     "searchsploit",
     "secretsdump.py",
@@ -325,6 +330,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "traceroute",
     "trivy",
     "tshark",
+    "upx",
     "vol",
     "wafw00f",
     "wget",
@@ -775,6 +781,42 @@ pub const DEFAULT_RULES: &str = r#"{
       "when": "missing",
       "action": "fake",
       "stdout": "navigating to http://{host}/\\nloaded: 200 OK, 14321 bytes\\nscreenshot: shot.png\\n"
+    },
+    {
+      "tool": "rizin",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "rizin 0.7.0 (x86_64-linux-gnu)\n"
+    },
+    {
+      "tool": "r2",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "radare2 5.8.8 27925 @ linux-x86-64\n"
+    },
+    {
+      "tool": "ilspycmd",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "// ILSpy 9.0.0\n// Decompiled from MyApp.dll (.NETCoreApp,Version=v8.0)\n"
+    },
+    {
+      "tool": "analyzeHeadless",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "INFO  Using log file: /tmp/ghidra.log\nINFO  ANALYZING file: {host}\nINFO  REPORT: Analysis succeeded (HeadlessAnalyzer)\n"
+    },
+    {
+      "tool": "upx",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Ultimate Packer for eXecutables\n    123456 ->   54321   44.00%    linux/amd64    app\nPacked 1 file.\n"
+    },
+    {
+      "tool": "die",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "ELF64 (x86-64)\n  Linker: GNU ld 2.42\n  Compiler: GCC 14.2\n"
     }
   ]
 }"#;

@@ -207,8 +207,9 @@ impl Lab {
                  Reading, probing, payloads and enumeration are always fine, and so is a normal-rate password \
                  sweep, a login attempt or a crawl. Six things count as real damage: somebody's password, users \
                  or roles, service configuration, business data, something that is serving, and an explicit \
-                 flood. Ask only when the command cannot tell you whether what you are about to overwrite is \
-                 business data or your own scratch; otherwise go ahead.",
+                 flood. Everything else goes without a pause, a write included. Ask only when the command cannot \
+                 tell whether it is about to overwrite somebody's business data or your own scratch — and when \
+                 it can, say what you assumed instead of stopping to ask.",
                 self.name, self.front
             )
         }
