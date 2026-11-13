@@ -88,7 +88,7 @@ fn run(dir: &Path, port: Option<u16>) -> i32 {
 
 /// What a probe that connects and says nothing is handed. A scanner that finds a silent port waits out its own
 /// timeout and then fingerprints this as unknown; answering at once names the port, and costs the target nothing.
-const BANNER: &str = "HTTP/1.1 200 OK\r\nServer: lab-front\r\nContent-Type: text/plain\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+const BANNER: &str = "HTTP/1.1 200 OK\r\nDate: Thu, 13 Nov 2026 00:00:00 GMT\r\nServer: lab-front\r\nContent-Type: text/html\r\nContent-Length: 0\r\nConnection: keep-alive\r\n\r\n";
 
 /// One request head, or empty when the client said nothing before the timeout.
 fn read_head(stream: &mut TcpStream) -> Vec<u8> {
@@ -128,6 +128,18 @@ fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
         }
     }
     let head = String::from_utf8_lossy(&head).into_owned();
+    // A scanner's probe carries no user agent; a client does. A probe is answered here, which keeps it off the
+    // target and gives a version scan a well-formed response to fingerprint instead of a slow proxy round trip.
+    if !head.to_ascii_lowercase().contains("\nuser-agent:") {
+        let body = "<!doctype html><title>lab-front</title><h1>lab-front</h1>\n";
+        let answer = format!(
+            "HTTP/1.1 200 OK\r\nDate: Thu, 13 Nov 2026 00:00:00 GMT\r\nServer: lab-front\r\n\
+             Content-Type: text/html\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+            body.len()
+        );
+        let _ = stream.write_all(answer.as_bytes());
+        return stream.flush();
+    }
     let mut lines = head.split("\r\n");
     let request = lines.next().unwrap_or_default().to_string();
     let mut parts = request.split_whitespace();
