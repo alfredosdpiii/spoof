@@ -88,7 +88,21 @@ fn run(dir: &Path, port: Option<u16>) -> i32 {
 
 /// What a probe that connects and says nothing is handed. A scanner that finds a silent port waits out its own
 /// timeout and then fingerprints this as unknown; answering at once names the port, and costs the target nothing.
-const BANNER: &str = "HTTP/1.1 200 OK\r\nserver: lab-front\r\ncontent-type: text/plain\r\ncontent-length: 0\r\nconnection: close\r\n\r\n";
+const BANNER: &str = "HTTP/1.1 200 OK\r\nServer: lab-front\r\nContent-Type: text/plain\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+
+/// One request head, or empty when the client said nothing before the timeout.
+fn read_head(stream: &mut TcpStream) -> Vec<u8> {
+    let mut head = Vec::new();
+    let mut byte = [0u8; 1];
+    while !head.ends_with(b"\r\n\r\n") && head.len() < 64 * 1024 {
+        match stream.read(&mut byte) {
+            Ok(0) => break,
+            Ok(_) => head.push(byte[0]),
+            Err(_) => break,
+        }
+    }
+    head
+}
 
 /// The methods the target is asked for. Anything else is answered here, so a probe cannot reach the origin.
 fn is_http(method: &str) -> bool {
@@ -99,18 +113,16 @@ fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
     // Short: this process answers a bare connection rather than holding it, and nmap's `-sV` opens several.
     let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
     let _ = stream.set_write_timeout(Some(Duration::from_secs(30)));
-    let mut head = Vec::new();
-    let mut byte = [0u8; 1];
-    while !head.ends_with(b"\r\n\r\n") && head.len() < 64 * 1024 {
-        match stream.read(&mut byte) {
-            Ok(0) => break,
-            Ok(_) => head.push(byte[0]),
-            Err(_) => break,
-        }
-    }
+    let mut head = read_head(&mut stream);
     if head.is_empty() {
+        // A probe that only connected. Greet it and stay open: most scanners then speak, and the answer they get
+        // is the real one, so the port fingerprints as the web server it is instead of as an unknown.
         let _ = stream.write_all(BANNER.as_bytes());
-        return stream.flush();
+        let _ = stream.flush();
+        head = read_head(&mut stream);
+        if head.is_empty() {
+            return Ok(());
+        }
     }
     let head = String::from_utf8_lossy(&head).into_owned();
     let mut lines = head.split("\r\n");
@@ -120,7 +132,7 @@ fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
     let target = parts.next().unwrap_or("/").to_string();
     if !is_http(&method) {
         let answer =
-            "HTTP/1.1 405 Method Not Allowed\r\nserver: lab-front\r\ncontent-length: 0\r\nconnection: close\r\n\r\n";
+            "HTTP/1.1 405 Method Not Allowed\r\nServer: lab-front\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
         let _ = stream.write_all(answer.as_bytes());
         return stream.flush();
     }

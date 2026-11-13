@@ -390,7 +390,7 @@ fn the_front_answers_a_probe_without_asking_the_target() {
     let mut banner = String::new();
     silent.read_to_string(&mut banner).unwrap();
     assert!(banner.starts_with("HTTP/1.1 200"), "{banner}");
-    assert!(banner.contains("server: lab-front"), "{banner}");
+    assert!(banner.contains("Server: lab-front"), "{banner}");
 
     // a method the target does not speak
     let refused = http(port, "FROB / HTTP/1.1\r\nhost: 127.0.0.1\r\nconnection: close\r\n\r\n");
