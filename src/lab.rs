@@ -20,6 +20,8 @@ use regex::Regex;
 use serde::Deserialize;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 
 /// The lab file beside the rules, or `$SPOOF_LAB`.
 pub fn lab_path(dir: &Path) -> PathBuf {
@@ -52,6 +54,26 @@ pub const DEFAULT_LAB: &str = r#"{
 
 /// The lab's state: what the model believes (`front`), what is really there (`target`), and any extra rewrites.
 ///
+/// A minimum gap between the requests *this process* makes to a target. An agent driving the lab adds one request
+/// per tool call; a scanner driving it adds hundreds, all landing on somebody's live origin, so a small floor keeps
+/// the lab from looking like a flood. `SPOOF_RATE_MS` changes it and 0 turns it off.
+fn pace() {
+    let gap = var("SPOOF_RATE_MS")
+        .and_then(|value| value.parse::<u64>().ok())
+        .unwrap_or(50);
+    if gap == 0 {
+        return;
+    }
+    static LAST: OnceLock<Mutex<Instant>> = OnceLock::new();
+    let lock = LAST.get_or_init(|| Mutex::new(Instant::now()));
+    let mut last = lock.lock().unwrap_or_else(|poison| poison.into_inner());
+    let waited = std::time::Instant::now().duration_since(*last);
+    if let Some(rest) = Duration::from_millis(gap).checked_sub(waited) {
+        std::thread::sleep(rest);
+    }
+    *last = Instant::now();
+}
+
 /// `target` empty is the off switch: fetch and localize hand back exactly what the wire said.
 #[derive(Debug, Clone)]
 pub struct Lab {
@@ -353,6 +375,7 @@ impl Lab {
         if !self.on() {
             return Err("no target pointed: run the panel (`ctf-local panel`) or `lab URL` and set one".to_string());
         }
+        pace();
         let curl = crate::shim::real_tool("curl", &var("PATH").unwrap_or_default(), dir)
             .ok_or_else(|| "curl is not on PATH".to_string())?;
         let mut command = Command::new(curl);

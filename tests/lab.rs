@@ -375,6 +375,29 @@ fn the_front_port_answers_with_the_local_view() {
     let _ = child.kill();
 }
 
+/// A probe that connects and says nothing, or asks in a way the target would not, is answered here — so a scanner
+/// neither waits out its own timeout against a silent port nor lands every probe on the live site.
+#[test]
+fn the_front_answers_a_probe_without_asking_the_target() {
+    let tmp = tempfile::tempdir().unwrap();
+    let real = target();
+    write_lab(tmp.path(), &real, "http://127.0.0.1:0");
+    let mut child = spawn(&["front", "--dir", tmp.path().to_str().unwrap()]);
+    let port = read_port(&mut child);
+
+    // a connect with no request: answered at once, named, and cheap
+    let mut silent = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    let mut banner = String::new();
+    silent.read_to_string(&mut banner).unwrap();
+    assert!(banner.starts_with("HTTP/1.1 200"), "{banner}");
+    assert!(banner.contains("server: lab-front"), "{banner}");
+
+    // a method the target does not speak
+    let refused = http(port, "FROB / HTTP/1.1\r\nhost: 127.0.0.1\r\nconnection: close\r\n\r\n");
+    assert!(refused.starts_with("HTTP/1.1 405"), "{refused}");
+    let _ = child.kill();
+}
+
 #[test]
 fn a_quote_in_the_target_survives_the_input_attribute() {
     let tmp = tempfile::tempdir().unwrap();

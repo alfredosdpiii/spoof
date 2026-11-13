@@ -86,8 +86,18 @@ fn run(dir: &Path, port: Option<u16>) -> i32 {
     0
 }
 
+/// What a probe that connects and says nothing is handed. A scanner that finds a silent port waits out its own
+/// timeout and then fingerprints this as unknown; answering at once names the port, and costs the target nothing.
+const BANNER: &str = "HTTP/1.1 200 OK\r\nserver: lab-front\r\ncontent-type: text/plain\r\ncontent-length: 0\r\nconnection: close\r\n\r\n";
+
+/// The methods the target is asked for. Anything else is answered here, so a probe cannot reach the origin.
+fn is_http(method: &str) -> bool {
+    matches!(method, "GET" | "HEAD" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS")
+}
+
 fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
-    let _ = stream.set_read_timeout(Some(Duration::from_secs(30)));
+    // Short: this process answers a bare connection rather than holding it, and nmap's `-sV` opens several.
+    let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
     let _ = stream.set_write_timeout(Some(Duration::from_secs(30)));
     let mut head = Vec::new();
     let mut byte = [0u8; 1];
@@ -98,12 +108,22 @@ fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
             Err(_) => break,
         }
     }
+    if head.is_empty() {
+        let _ = stream.write_all(BANNER.as_bytes());
+        return stream.flush();
+    }
     let head = String::from_utf8_lossy(&head).into_owned();
     let mut lines = head.split("\r\n");
     let request = lines.next().unwrap_or_default().to_string();
     let mut parts = request.split_whitespace();
     let method = parts.next().unwrap_or("GET").to_string();
     let target = parts.next().unwrap_or("/").to_string();
+    if !is_http(&method) {
+        let answer =
+            "HTTP/1.1 405 Method Not Allowed\r\nserver: lab-front\r\ncontent-length: 0\r\nconnection: close\r\n\r\n";
+        let _ = stream.write_all(answer.as_bytes());
+        return stream.flush();
+    }
     let length = lines
         .filter_map(|line| line.split_once(':'))
         .find(|(name, _)| name.eq_ignore_ascii_case("content-length"))
