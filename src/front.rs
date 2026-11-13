@@ -111,14 +111,17 @@ fn is_http(method: &str) -> bool {
 
 fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
     // Short: this process answers a bare connection rather than holding it, and nmap's `-sV` opens several.
-    let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
+    // A real client sends its request in a millisecond; a scanner connects and waits. So the first read is short:
+    // a client is served, a scanner is greeted inside its own banner window instead of after it.
+    let _ = stream.set_read_timeout(Some(Duration::from_millis(250)));
     let _ = stream.set_write_timeout(Some(Duration::from_secs(30)));
     let mut head = read_head(&mut stream);
     if head.is_empty() {
-        // A probe that only connected. Greet it and stay open: most scanners then speak, and the answer they get
-        // is the real one, so the port fingerprints as the web server it is instead of as an unknown.
+        // A probe that only connected. Greet it as a service would, then take whatever it says next: the banner is
+        // what lets a scanner recognise the port, and the request that follows is proxied like any other.
         let _ = stream.write_all(BANNER.as_bytes());
         let _ = stream.flush();
+        let _ = stream.set_read_timeout(Some(Duration::from_secs(2)));
         head = read_head(&mut stream);
         if head.is_empty() {
             return Ok(());
