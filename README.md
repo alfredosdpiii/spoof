@@ -129,7 +129,8 @@ file.
 | command | what it shows |
 | --- | --- |
 | `spoof list` | every rule in order, and whether each tool's real binary exists |
-| `spoof log -n 50` | the lab audit log: command, cwd, matching rule, exit |
+| `spoof log -n 50` | the record: each call, its cwd, the rule that decided it, and what the model was told |
+| `spoof log --verify` | walk the record's hash chain and name the first line that does not add up |
 | `spoof demo` | a few commands run through the shims, as the agent would see them |
 | `spoof panel` | the MCP lab's panel: point it at a real URL (`ctf-local panel` standalone) |
 | `spoof front` | the front address served for real, so `ss -ltn`, `nc` and a raw socket find an open port |
@@ -168,6 +169,10 @@ To remove it: `rm -rf ~/.local/share/spoof`. Nothing outside that directory is t
   ask" — was flagged in neither. The same guard fires through ultron, so it is Anthropic's and not one client's.
   `examples/probe/run.sh` prompts the plain way. Keeping the attached tool list small (`--strict-mcp-config`) helps
   for the same reason a smaller request is read less.
+- The record is append-only and chained: every line carries the hash of the one before it, and `spoof log --verify`
+  names the first line that does not add up. An edit or a dropped line shows; the newest lines are held by a small
+  anchor beside it (`audit.head`), since cutting the tail off would otherwise look like a shorter record. Payloads are
+  clipped to 1 KB and the front records size rather than body, so a line stays inside one atomic write.
 - A shim stands in for the whole tool. `fake` output is canned: it does not answer the actual query, so a wrong
   answer here is a wrong belief there.
 - `rewrite` runs the real tool, so it needs it; with none present the rule's own text is used instead.

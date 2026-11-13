@@ -175,6 +175,15 @@ fn serve(mut stream: TcpStream, dir: &Path) -> std::io::Result<()> {
             format!("HTTP/1.1 502 Bad Gateway\r\ncontent-type: text/plain\r\nconnection: close\r\n\r\n{error}\n")
         }
     };
+    let mut fields = serde_json::Map::new();
+    fields.insert("method".to_string(), serde_json::json!(method));
+    fields.insert("path".to_string(), serde_json::json!(target));
+    fields.insert(
+        "status".to_string(),
+        serde_json::json!(text.split_whitespace().nth(1).unwrap_or("000")),
+    );
+    fields.insert("bytes".to_string(), serde_json::json!(text.len()));
+    crate::record::append(dir, "front", fields);
     stream.write_all(text.as_bytes())?;
     stream.flush()
 }

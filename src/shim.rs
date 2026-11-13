@@ -11,6 +11,7 @@
 use crate::lab::{Lab, host};
 use crate::rules::{Decision, Rules, decide};
 use crate::{SHIM_BINARY, var};
+use serde_json::json;
 use std::ffi::OsString;
 use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
@@ -46,26 +47,40 @@ pub fn run(tool: &str, args: &[OsString], dir: &Path) -> i32 {
         && let Some(real) = &real
     {
         if log {
-            audit(dir, tool, &joined, Some(real), decision, None);
+            audit(dir, tool, &joined, Some(real), decision, None, None);
         }
         return exec(real, args);
     }
+    let mut answered: Option<String> = None;
     let code = match decision {
         Decision::Pass => not_found(tool),
         Decision::Fake { rule, .. } => {
             let (stdout, stderr) = rule.text(tool, &joined);
             let _ = std::io::stdout().write_all(stdout.as_bytes());
             let _ = std::io::stderr().write_all(stderr.as_bytes());
+            answered = Some(stdout);
             rule.exit_code(if rule.action == crate::rules::Action::Block {
                 1
             } else {
                 0
             })
         }
-        Decision::Rewrite { rule, .. } => rewrite(rule, tool, &joined, real.as_deref(), args, dir),
+        Decision::Rewrite { rule, .. } => {
+            let (code, text) = rewrite(rule, tool, &joined, real.as_deref(), args, dir);
+            answered = Some(text);
+            code
+        }
     };
     if log {
-        audit(dir, tool, &joined, real.as_deref(), decision, Some(code));
+        audit(
+            dir,
+            tool,
+            &joined,
+            real.as_deref(),
+            decision,
+            Some(code),
+            answered.as_deref(),
+        );
     }
     code
 }
@@ -79,7 +94,7 @@ fn rewrite(
     real: Option<&Path>,
     args: &[OsString],
     dir: &Path,
-) -> i32 {
+) -> (i32, String) {
     // A rewrite is the call that reaches the target and the answer the model reads. When a lab is pointed, the
     // front in the command line becomes the target on the way in and the target's spelling becomes the front on
     // the way out, so `curl http://localhost:8080/` is a real request instead of a dead port.
@@ -94,13 +109,13 @@ fn rewrite(
         let _ = std::io::stdout().write_all(stdout.as_bytes());
         let _ = std::io::stderr().write_all(stderr.as_bytes());
         let fallback = if rule.stdout.is_empty() { NOT_FOUND } else { 0 };
-        return rule.exit_code(fallback);
+        return (rule.exit_code(fallback), stdout);
     };
     let output = match Command::new(real).args(&mapped).output() {
         Ok(output) => output,
         Err(error) => {
             eprintln!("spoof: {}: {error}", real.display());
-            return NOT_FOUND;
+            return (NOT_FOUND, String::new());
         }
     };
     let mut text = String::from_utf8_lossy(&output.stdout).into_owned();
@@ -116,7 +131,7 @@ fn rewrite(
     let _ = std::io::stdout().write_all(text.as_bytes());
     let _ = std::io::stderr().write_all(&output.stderr);
     let fallback = output.status.code().unwrap_or(NOT_FOUND);
-    rule.exit_code(fallback)
+    (rule.exit_code(fallback), text)
 }
 
 /// Swap the front for the target in one argument, scheme-qualified first so a bare `localhost:8080` still maps.
@@ -171,26 +186,43 @@ fn log_wanted(rules: &Rules) -> bool {
 
 /// The audit line: what was called, what decided it, and what came out. Appended with one `write_all` to an
 /// `O_APPEND` file, so concurrent shims interleave lines and never half a line (a line stays under `PIPE_BUF`).
-fn audit(dir: &Path, tool: &str, args: &str, real: Option<&Path>, decision: Decision<'_>, code: Option<i32>) {
-    let line = serde_json::json!({
-        "ts": std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .map_or(0, |since| since.as_millis()),
-        "tool": tool,
-        "args": truncate(args, 512),
-        "cwd": std::env::current_dir().ok().map(|dir| dir.to_string_lossy().into_owned()),
-        "pid": std::process::id(),
-        "decision": decision.label(),
-        "rule": decision.index(),
-        "exit": code,
-        "real": real.map(|path| path.to_string_lossy().into_owned()),
-    });
-    let mut line = line.to_string();
-    line.push('\n');
-    let path = dir.join("audit.jsonl");
-    if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
-        let _ = file.write_all(line.as_bytes());
+/// One chained line for one call: the command, what decided it, and what the model was told.
+fn audit(
+    dir: &Path,
+    tool: &str,
+    args: &str,
+    real: Option<&Path>,
+    decision: Decision<'_>,
+    code: Option<i32>,
+    answered: Option<&str>,
+) {
+    let mut fields = serde_json::Map::new();
+    fields.insert("tool".to_string(), json!(tool));
+    fields.insert("args".to_string(), json!(truncate(args, 512)));
+    fields.insert(
+        "cwd".to_string(),
+        json!(
+            std::env::current_dir()
+                .ok()
+                .map(|dir| dir.to_string_lossy().into_owned())
+        ),
+    );
+    fields.insert("pid".to_string(), json!(std::process::id()));
+    fields.insert("decision".to_string(), json!(decision.label()));
+    fields.insert("rule".to_string(), json!(decision.index()));
+    fields.insert("exit".to_string(), json!(code));
+    fields.insert(
+        "real".to_string(),
+        json!(real.map(|path| path.to_string_lossy().into_owned())),
+    );
+    if let Some(text) = answered {
+        let (text, clipped) = crate::record::clip(text);
+        fields.insert("out".to_string(), json!(text));
+        if clipped {
+            fields.insert("clipped".to_string(), json!(true));
+        }
     }
+    crate::record::append(dir, "shim", fields);
 }
 
 fn truncate(text: &str, limit: usize) -> &str {

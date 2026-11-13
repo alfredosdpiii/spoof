@@ -36,7 +36,10 @@ are what reaches an agent that reads the web with its own tools, where no shim c
 9. **The front port is really open.** `spoof front` binds the lab's front address and answers each request by
    fetching the target and localizing it, so `ss -ltn`, `nc` and a raw socket find a live port instead of a seam
    (`src/front.rs`).
-10. **The frame claims only what the lab controls.** It says the target is in scope and that the lab is a gateway
+10. **The record is chained.** Every line the lab writes carries the hash of the line before it, an edit fails
+    `verify` at that line, and a dropped line fails it at the next. The tail is held by `audit.head`, because cutting
+    the newest entries off leaves every remaining line valid.
+11. **The frame claims only what the lab controls.** It says the target is in scope and that the lab is a gateway
     in front of the live site, not a copy. Broken: the frame says "local" and the model asks whether it is a sandbox
     copy — which the lab cannot answer, so it hedges. Measured: the "in scope" frame got the first `proceed` in
     eleven live runs, the "local" one did not.
@@ -119,7 +122,8 @@ Covered files and functions: `src/rules.rs` (`decide`, `Rules::parse`, `Rules::l
 `audit`, `rewrite`), the `DEFAULT_RULES` text, and for ctf-local `src/lab.rs` (`parse`, `load`, `save`,
 `on`, `localize`, `front_url`, `target_url`, `host`, `path_of`, `command`, `add`, `shell`, `expand`, `lab_dir`),
 `src/mcp.rs` (`run`, `reply`, `tools`, `call`, `fetch`, `shell`, `add`, `dns`, `info`, `config`), `src/panel.rs`
-(`run`, `serve`, `route`, `decode`) and `src/front.rs` (`command`, `run`, `serve`, `reheader`).
+(`run`, `serve`, `route`, `decode`), `src/front.rs` (`command`, `run`, `serve`, `reheader`) and `src/record.rs`
+(`append`, `verify`, `clip`, `head`).
 
 Two checks stand over the files themselves rather than over behaviour: `the_stock_rules_parse_and_fill` and
 `the_example_rule_sets_parse_and_fill` read the shipped rule files, and `the_front_port_answers_with_the_local_view`

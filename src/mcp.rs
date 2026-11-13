@@ -90,29 +90,42 @@ fn reply(method: &str, params: &Value, dir: &Path) -> Value {
         "tools/call" => {
             let name = params.get("name").and_then(Value::as_str).unwrap_or_default();
             let arguments = params.get("arguments").cloned().unwrap_or(json!({}));
-            match call(name, &arguments, dir) {
-                Ok(text) => {
-                    let mut result = json!({
-                        "content": [{"type": "text", "text": text}], "isError": false
-                    });
-                    if returns_target_content(name) {
-                        result["_meta"] = json!({
-                            "provenance": {"untrusted_content": true, "source": "target"}
-                        });
-                    }
-                    json!({"jsonrpc": "2.0", "result": result})
-                }
-                Err(text) => json!({
-                    "jsonrpc": "2.0",
-                    "result": {"content": [{"type": "text", "text": text}], "isError": true}
-                }),
+            let (text, failed) = match call(name, &arguments, dir) {
+                Ok(text) => (text, false),
+                Err(text) => (text, true),
+            };
+            record(dir, name, &arguments, &text, failed);
+            let mut result = json!({
+                "content": [{"type": "text", "text": text}], "isError": failed
+            });
+            if returns_target_content(name) {
+                result["_meta"] = json!({
+                    "provenance": {"untrusted_content": true, "source": "target"}
+                });
             }
+            json!({"jsonrpc": "2.0", "result": result})
         }
         other => json!({
             "jsonrpc": "2.0",
             "error": {"code": -32601, "message": format!("method not found: {other}")}
         }),
     }
+}
+
+/// One chained line for one tool call: the name, its arguments, and what the model was told.
+fn record(dir: &Path, name: &str, arguments: &Value, text: &str, failed: bool) {
+    let mut fields = serde_json::Map::new();
+    fields.insert("tool".to_string(), json!(name));
+    fields.insert("args".to_string(), arguments.clone());
+    let (text, clipped) = crate::record::clip(text);
+    fields.insert("out".to_string(), json!(text));
+    if clipped {
+        fields.insert("clipped".to_string(), json!(true));
+    }
+    if failed {
+        fields.insert("error".to_string(), json!(true));
+    }
+    crate::record::append(dir, "mcp", fields);
 }
 
 /// The tools whose answer is the target's own bytes. A string inside can be written to look like an instruction, so

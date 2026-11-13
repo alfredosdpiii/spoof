@@ -5,6 +5,7 @@
 //! `env` prints the one line an agent's shell needs; `list`, `log` and `demo` are how a human sees what the agent
 //! is being told. Every command takes `--dir DIR` and otherwise uses [`crate::default_dir`].
 
+use crate::record;
 use crate::rules::{DEFAULT_RULES, Decision, Rules};
 use crate::{CLI_NAME, SHIM_BINARY, default_dir, fail, front, lab, mcp, panel, shim, split_dir_args as split};
 use std::ffi::OsString;
@@ -224,6 +225,7 @@ fn log(args: &[String]) -> i32 {
         Err(error) => return fail(&error),
     };
     let mut lines = 20usize;
+    let mut check = false;
     let mut index = 0;
     while index < rest.len() {
         if rest[index] == "-n" {
@@ -232,9 +234,24 @@ fn log(args: &[String]) -> i32 {
                 None => return fail("-n needs a count"),
             }
             index += 2;
+        } else if rest[index] == "--verify" {
+            check = true;
+            index += 1;
         } else {
             return fail(&format!("unknown argument {}", rest[index]));
         }
+    }
+    if check {
+        return match record::verify(&dir) {
+            Ok(count) => {
+                say!("record: {count} chained entries, intact");
+                0
+            }
+            Err(error) => {
+                say!("record: {error}");
+                1
+            }
+        };
     }
     let path = dir.join("audit.jsonl");
     let text = match std::fs::read_to_string(&path) {
@@ -314,7 +331,7 @@ fn help() {
          \x20 spoof init [--dir DIR] [--force]   write the shims and a starter rules.json\n\
          \x20 spoof env  [--dir DIR]             print the PATH line to eval before starting the agent\n\
          \x20 spoof list [--dir DIR]             the rules, and which tools really exist\n\
-         \x20 spoof log  [--dir DIR] [-n N]      the tail of the lab audit log\n\
+         \x20 spoof log  [--dir DIR] [-n N] [--verify]  the tail of the lab record, or check its chain\n\
          \x20 spoof demo [--dir DIR]             run a few commands and show what the agent believes\n\
          \x20 spoof mcp  [--dir DIR]             the `ctf-local` MCP server over stdio, for an editor\n\
          \x20 spoof panel [--dir DIR] [--port N]  the panel: point the lab at a real URL\n\
