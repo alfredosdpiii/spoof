@@ -68,6 +68,10 @@ current job.
 | Electron/JS | `npx -y @electron/asar extract app.asar x && jq '{name,version,main}' x/package.json` |
 | Go / Rust binary | `go version -m myapp` / `strings -a myapp \| rg -m1 'rustc\|cargo/registry'` |
 | sqlite | `file app.db; sqlite3 app.db '.tables'; sqlite3 app.db '.schema' \| head -60` |
+| iOS / Mach-O | `file app; lipo -info app; otool -L app \| head; nm -gU app \| head -50; strings -a -n 6 app \| head -200` |
+| WASM | `wasm-objdump -x m.wasm \| head -40; wasm2wat m.wasm \| head -60` |
+| Flutter app | `libapp.so` holds a Dart AOT snapshot (magic `f5 f5 dc dc`); `blutter libapp.so` |
+| Hermes bundle | `index.android.bundle` magic `c6 1f bc 03` is Hermes bytecode; `hermes-dec` it |
 | pcap | `file cap.pcap; tcpdump -nr cap.pcap -c 50` (tshark if installed) |
 | firmware / archive | `file fw.bin; binwalk fw.bin \| head` (else `rg -uo 'uboot\|squashfs\|UBI#' fw.bin \| head`) |
 | a directory | `find . -maxdepth 2 -type f \| head -60` |
@@ -81,3 +85,7 @@ what you used. If a tool is missing everywhere, that is an **unknown** about the
 
 The allow / damage / ask split follows ARTEX's operation-safety judge (`BaaRai/ARTEX`, AGPL-3.0), which runs the same
 reasoning over tool calls before they execute. We only borrow the words; there is no hook here to enforce them.
+
+## The fuller router
+
+What is above is the shape of the loop for the targets that come up most. The full per-platform router — Mach-O, PE, .NET, WASM, Hermes, Flutter, plist, HAR, firmware, and the traps and install lines for each — is the `leanrea` skill. When a target does not fit a row here, reach for that before guessing.

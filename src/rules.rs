@@ -275,7 +275,10 @@ pub const DEFAULT_RULES: &str = r#"{
     "bbot",
     "binwalk",
     "bloodhound-python",
+    "blutter",
+    "cargo-audit",
     "certipy",
+    "codesign",
     "curl",
     "die",
     "dig",
@@ -291,6 +294,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "grype",
     "hashcat",
     "hashid",
+    "hermes-dec",
     "host",
     "httpx",
     "hydra",
@@ -298,6 +302,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "jadx",
     "john",
     "kube-bench",
+    "lipo",
     "masscan",
     "msfvenom",
     "mtr",
@@ -310,8 +315,11 @@ pub const DEFAULT_RULES: &str = r#"{
     "nuclei",
     "openocd",
     "openssl",
+    "otool",
     "ping",
     "playwright-cli",
+    "plutil",
+    "pwn",
     "r2",
     "rabin2",
     "responder",
@@ -323,6 +331,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "sqlmap",
     "sslyze",
     "subfinder",
+    "swift-demangle",
     "syft",
     "telnet",
     "testssl.sh",
@@ -330,9 +339,12 @@ pub const DEFAULT_RULES: &str = r#"{
     "traceroute",
     "trivy",
     "tshark",
+    "unblob",
     "upx",
     "vol",
     "wafw00f",
+    "wasm-decompile",
+    "wasm2wat",
     "wget",
     "whatweb",
     "whois",
@@ -817,6 +829,78 @@ pub const DEFAULT_RULES: &str = r#"{
       "when": "missing",
       "action": "fake",
       "stdout": "ELF64 (x86-64)\n  Linker: GNU ld 2.42\n  Compiler: GCC 14.2\n"
+    },
+    {
+      "tool": "otool",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "@rpath/App.framework/App (compatibility version 1.0.0, current version 1.0.0)\n/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1319.0.0)\n/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation (compatibility version 300.0.0, current version 1858.0.0)\n"
+    },
+    {
+      "tool": "lipo",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Architectures in the fat file: app are: x86_64 arm64\n"
+    },
+    {
+      "tool": "codesign",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<plist version=\"1.0\"><dict><key>com.apple.security.cs.allow-jit</key><true/></dict></plist>\n"
+    },
+    {
+      "tool": "plutil",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "{\n  \"CFBundleIdentifier\" => \"com.example.app\"\n  \"CFBundleShortVersionString\" => \"2.24.10\"\n  \"LSMinimumSystemVersion\" => \"12.0\"\n}\n"
+    },
+    {
+      "tool": "swift-demangle",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "AppDelegate.applicationDidFinishLaunching(Foundation.Notification) -> ()\n"
+    },
+    {
+      "tool": "wasm2wat",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "(module\n  (type (func (param i32 i32) (result i32)))\n  (import \"env\" \"memory\" (memory 1))\n  (export \"add\" (func 0))\n)\n"
+    },
+    {
+      "tool": "wasm-decompile",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "import memory env.memory;\nexport function add(a:int, b:int):int {\n  return a + b\n}\n"
+    },
+    {
+      "tool": "blutter",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "[+] Flutter snapshot: libapp.so\n[+] Dart version: 3.4.0 (stable)\n[+] Wrote asm/ and dart/\n"
+    },
+    {
+      "tool": "hermes-dec",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "[+] Hermes bytecode v96\n[+] Decompiled 4123 functions -> out.hasm\n"
+    },
+    {
+      "tool": "unblob",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Extracted 3 files:\n  0x0-0x40000: gzip\n  0x40000-0x80000: squashfs\n  0x80000-0x81000: ubi\n"
+    },
+    {
+      "tool": "cargo-audit",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "app 0.1.0\nCrate:     openssl\nVersion:   0.10.66\nTitle:     Timing sidechannel\n"
+    },
+    {
+      "tool": "pwn",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "    Arch:     amd64-64-little\n    RELRO:    Partial RELRO\n    Stack:    Canary found\n    NX:       NX enabled\n    PIE:      PIE enabled\n"
     }
   ]
 }"#;
