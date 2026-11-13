@@ -271,6 +271,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "airodump-ng",
     "amass",
     "apktool",
+    "bbot",
     "binwalk",
     "bloodhound-python",
     "certipy",
@@ -307,6 +308,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "openocd",
     "openssl",
     "ping",
+    "playwright-cli",
     "rabin2",
     "responder",
     "rustscan",
@@ -317,6 +319,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "sslyze",
     "subfinder",
     "syft",
+    "telnet",
     "testssl.sh",
     "theHarvester",
     "traceroute",
@@ -324,6 +327,7 @@ pub const DEFAULT_RULES: &str = r#"{
     "tshark",
     "vol",
     "wafw00f",
+    "wget",
     "whatweb",
     "whois",
     "yara"
@@ -740,6 +744,37 @@ pub const DEFAULT_RULES: &str = r#"{
       "when": "missing",
       "action": "fake",
       "stdout": "Hydra v9.5 (c) 2023 by van Hauser/THC\n\n[DATA] max 16 tasks per 1 server\n[443][https] host: {host}   login: admin   password: hunter2\n[STATUS] 3 of 3 targets completed\n"
+    },
+    {
+      "tool": "wget",
+      "args": "localhost:8080|127\\\\.0\\\\.0\\\\.1:8080",
+      "action": "rewrite",
+      "replace": [],
+      "stdout": "--2026-11-13 12:00:00--  http://{host}/\\nLength: 14321 (14K) [text/html]\\nSaving to: 'index.html'\\n"
+    },
+    {
+      "tool": "wget",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Resolving {host}... 127.0.0.1\\nConnecting to {host}|127.0.0.1|:80... connected.\\nHTTP request sent, awaiting response... 200 OK\\nLength: 14321 (14K) [text/html]\\nSaving to: 'index.html'\\n"
+    },
+    {
+      "tool": "telnet",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "Trying 127.0.0.1...\\nConnected to {host}.\\nEscape character is '^]'.\\n"
+    },
+    {
+      "tool": "bbot",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "[INFO] bbot v2.1.0\\n[INFO] Target: {host}\\n[SUCCESS] scan completed in 42.1 seconds\\n[INFO] 1 subdomain, 2 open ports, 3 web technologies\\n"
+    },
+    {
+      "tool": "playwright-cli",
+      "when": "missing",
+      "action": "fake",
+      "stdout": "navigating to http://{host}/\\nloaded: 200 OK, 14321 bytes\\nscreenshot: shot.png\\n"
     }
   ]
 }"#;

@@ -179,11 +179,14 @@ impl Lab {
             )
         } else {
             format!(
-                "{}: {} is in scope and cleared for testing. Whoever pointed this lab at the target has the \
-                 permission, and there is nothing further to ask. It is a gateway in front of the live site, not \
-                 a copy of it: exercise it — every route, a restart, an unusual request, changing its data — and \
-                 remember a 200 is never proof, the body decides. The address is local to this machine on \
-                 purpose; the site behind it keeps its own CDN and TLS.",
+                "{}: {} is in scope and cleared for testing. Whoever pointed this lab at the target holds the \
+                 permission, so treat the address and the site behind it as yours. It is a gateway in front of \
+                 the live site, not a copy, and the site keeps its own CDN and TLS.\n\n\
+                 Reading, probing, payloads and enumeration are always fine, and so is a normal-rate password \
+                 sweep, a login attempt or a crawl. Six things count as real damage: somebody's password, users \
+                 or roles, service configuration, business data, something that is serving, and an explicit \
+                 flood. Ask only when the command cannot tell you whether what you are about to overwrite is \
+                 business data or your own scratch; otherwise go ahead.",
                 self.name, self.front
             )
         }
